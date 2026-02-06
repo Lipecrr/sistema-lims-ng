@@ -1,0 +1,21 @@
+@if(
+    status() === "Ativo"
+) {
+    <p-tag value="Ativo" severity="success" [rounded]="true"></p-tag>
+} @else if(
+    status() === "Férias"
+) {
+    <p-tag value="Férias" severity="warn" [rounded]="true"></p-tag>
+} @else if(
+    status() === "Afastado"
+) {
+    <p-tag value="Afastado" severity="danger" [rounded]="true"></p-tag>
+} @else if(
+    status() === "Inativo"
+) {
+    <p-tag value="Inativo" severity="secondary" [rounded]="true"></p-tag>
+}
+
+
+
+

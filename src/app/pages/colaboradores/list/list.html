@@ -1,0 +1,85 @@
+<div class="space-y-6 max-w-7xl mx-auto">
+
+    <div class="flex justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Gerenciamento de Colaboradores</h1>
+            <p class="text-gray-600">Visualize e gerencie os acessos e informações de todos os membros da equipe</p>
+        </div>
+
+        <p-button label="Novo Colaborador" icon="fa-solid fa-user-plus" [raised]="true" severity="info"></p-button>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-4">
+        <div class="flex flex-row gap-4">
+            <input pInputText placeholder="Busca por nome, cargo,departamento ou email..." fluid [(ngModel)]="pesquisa"
+                [pAutoFocus]="true">
+
+            <p-select [options]="filtrosDepartamento" [(ngModel)]="filtroSelecionadoDepartamento"></p-select>
+            <p-select [options]="filtrosStatus" [(ngModel)]="filtroSelecionadoStatus"></p-select>
+        </div>
+    </div>
+
+
+    <p-table [value]="colaboradores" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="5"
+        [rowsPerPageOptions]="[5, 10, 20]">
+        <ng-template #header>
+            <tr>
+                <th>Nome</th>
+                <th>Cargo</th>
+                <th>Departamento</th>
+                <th>Status</th>
+                <th>
+                    <div class="text-right">Ações</div>
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-colaborador>
+            <tr>
+                <td>{{ colaborador.nome }}</td>
+                <td>{{ colaborador.cargo }}</td>
+                <td>{{ colaborador.departamento }}</td>
+                <td>
+                    <app-registro-status-tag [status]="colaborador.status" />
+                </td>
+                <td>
+                    <div class="flex gap-1 justify-end">
+                        <p-button icon="fa-regular fa-pen-to-square" variant="text" severity="info" />
+                        <p-button icon="fa fa-trash" variant="text" severity="danger" />
+                    </div>
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+    <div class="flex gap-4 px-4">
+        <div class="flex-1 bg-white rounded-xl p-4">
+            <p class="text-gray-600">Total de Equipe</p>
+            <div class="flex justify-between items-center">
+                <span class="text-xl font-bold">{{somarTotalEquipe()}}</span>
+                <div class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded">
+                    <i class="fa-solid fa-user-group text-blue-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 bg-white rounded-xl p-4">
+            <p class="text-gray-600">Analistas Ativos</p>
+            <div class="flex justify-between items-center">
+                <span class="text-xl font-bold">{{somarAnalistasAtivos()}}</span>
+                <div class="flex items-center justify-center w-10 h-10 bg-blue-100 rounded">
+                    <i class="fa-solid fa-microscope  text-blue-400 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex-1 bg-white rounded-xl p-4">
+            <p class="text-gray-600">Acessos Hoje</p>
+            <div class="flex justify-between items-center">
+                <span class="text-xl font-bold"></span>
+                <div class="flex items-center justify-center w-10 h-10 bg-purple-100 rounded">
+                    <i class="fa-solid fa-arrow-right-to-bracket text-purple-600 text-xl"></i>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
