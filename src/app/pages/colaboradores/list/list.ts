@@ -13,6 +13,7 @@ import { ResgistroStatusTag } from '@/core/components/registro-status-tag/regist
 import { ColaboradorResponseModel } from '@/models/colaborador.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
+import { StepperModule } from 'primeng/stepper';
 
 @Component({
   selector: 'app-list',
@@ -28,10 +29,12 @@ import { Component } from '@angular/core';
     InputMaskModule,
     DatePickerModule,
     TextareaModule,
-    ReactiveFormsModule],
+    ReactiveFormsModule,
+    StepperModule],
   templateUrl: './list.html',
 })
 export class List {
+  visible = true
   filtrosDepartamento = [
   "Departamento",
   "Laboratório",
