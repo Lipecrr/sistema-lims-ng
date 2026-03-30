@@ -6,9 +6,8 @@
             <p class="text-gray-600">Visualize e gerencie os acessos e informações de todos os membros da equipe</p>
         </div>
 
-        <p-button label="Novo Colaborador" icon="fa-solid fa-user-plus" [raised]="true" severity="info"></p-button>
+        <p-button label="Novo Colaborador" icon="fa-solid fa-user-plus" [raised]="true" severity="info" (onClick)="cadastrarColaborador()"></p-button>
     </div>
-
     <div class="bg-white rounded-xl shadow-sm p-4">
         <div class="flex flex-row gap-4">
             <input pInputText placeholder="Busca por nome, cargo,departamento ou email..." fluid [(ngModel)]="pesquisa"
@@ -84,109 +83,148 @@
 </div>
 
 <div class="card flex justify-center">
-    <p-button label="Show" />
-    <p-dialog header="Cadastro de Novo Colaborador" [modal]="true" [(visible)]="visible" [style]="{ width: '50rem' }"
+    <p-button label="Show" (onClick)="visible = true" />
+
+    <p-dialog header="Cadastro de Novo Colaborador" [modal]="true" [(visible)]="visible"
+        [style]="{ width: '50rem' }"
         [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
 
+        <form [formGroup]="formColaborador" class="w-full">
 
-        <div class="card flex justify-center">
-            <p-stepper [value]="1" class="basis-[50rem]">
-                <p-step-list>
-                    <p-step [value]="1">
-                        <p class="font-semibold">Informações Pessoais</p>
-                    </p-step>
-                    <p-step [value]="2">
-                        <p class="font-semibold">Dados Profissionais</p>
-                    </p-step>
-                    <p-step [value]="3">
-                        <p class="font-semibold">Acesso ao Sistema</p>
-                    </p-step>
-                </p-step-list>
-                <p-step-panels>
-                    <p-step-panel [value]="1">
-                        <ng-template #content let-activateCallback="activateCallback">
-                            <div class="flex flex-col h-48">
-                                <div
-                                    class="pl-3 gap-1 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-col flex justify-center items-stard font-medium">
-                                    <div>
-                                        <label for="nome" class="font-semibold w-35">Nome Completo<span
-                                                class="font-bold text-red-700">*</span></label>
-                                        <input pInputText id="nome" class="flex-auto" autocomplete="off" fluid
-                                            formControlName="nome">
+            <div class="card flex justify-center w-full">
+                <p-stepper [value]="1" class="w-full">
+
+                    <p-step-list>
+                        <p-step [value]="1">
+                            <p class="font-semibold">Informações Pessoais</p>
+                        </p-step>
+                        <p-step [value]="2">
+                            <p class="font-semibold">Dados Profissionais</p>
+                        </p-step>
+                        <p-step [value]="3">
+                            <p class="font-semibold">Acesso ao Sistema</p>
+                        </p-step>
+                    </p-step-list>
+
+                    <p-step-panels>
+
+                        <p-step-panel [value]="1">
+                            <ng-template #content let-activateCallback="activateCallback">
+
+                                <div class="p-4 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex flex-col gap-4 min-h-[260px]">
+
+                                    <div class="flex flex-col gap-1">
+                                        <label for="nome" class="font-semibold">
+                                            Nome Completo <span class="text-red-700">*</span>
+                                        </label>
+                                        <input pInputText id="nome" formControlName="nome" class="w-full">
                                     </div>
 
-                                    <div class="flex flex-row gap-4">
-                                        <div>
-                                            <label for="dataNascimento" class="font-semibold w-24">Data de Nascimento
-                                                <span class="font-bold text-red-700">*</span></label>
-                                            <p-date-picker fluid id="dataNascimento" formControlName="dataNascimento"
-                                                class="w-90" />
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <label for="dataNascimento" class="font-semibold">
+                                                Data de Nascimento <span class="text-red-700">*</span>
+                                            </label>
+                                            <p-date-picker id="dataNascimento" formControlName="dataNascimento" class="w-full"></p-date-picker>
                                         </div>
-                                        
-                                        <div class="flex flex-col w-90">
-                                            <label for="cpf" class="font-semibold w-24">CPF <span
-                                                    class="font-bold text-red-700">*</span></label>
-                                            <p-inputmask mask="999.999.999-99" placeholder="999.999.999-99" id="cpf"
-                                                formControlName="cpf" id="cpf" fluid/>
-                                        </div>
-                                    </div>
 
-                                    <div class="flex pt-6 justify-end">
-                                        <p-button label="Next" icon="pi pi-arrow-right" iconPos="right"
-                                            (onClick)="activateCallback(2)" />
+                                        <div class="flex flex-col gap-1">
+                                            <label for="cpf" class="font-semibold">
+                                                CPF <span class="text-red-700">*</span>
+                                            </label>
+                                            <p-inputmask mask="999.999.999-99" id="cpf" formControlName="cpf" class="w-full"></p-inputmask>
+                                        </div>
                                     </div>
 
                                 </div>
-                            </div>
-                        </ng-template>
-                    </p-step-panel>
-                    <p-step-panel [value]="2">
-                        <ng-template #content let-activateCallback="activateCallback">
-                            <div class="flex flex-col h-48">
-                                <div
-                                    class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">
-                                    Content II</div>
-                            </div>
-                            <div class="flex pt-6 justify-between">
-                                <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                    (onClick)="activateCallback(1)" />
-                                <p-button label="Next" icon="pi pi-arrow-right" iconPos="right"
-                                    (onClick)="activateCallback(3)" />
-                            </div>
-                        </ng-template>
-                    </p-step-panel>
-                    <p-step-panel [value]="3">
-                        <ng-template #content let-activateCallback="activateCallback">
-                            <div class="flex flex-col h-48">
-                                <div
-                                    class="border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex-auto flex justify-center items-center font-medium">
-                                    Content III</div>
-                            </div>
-                            <div class="flex pt-6 justify-start">
-                                <p-button label="Back" icon="pi pi-arrow-left" iconPos="right"
-                                    (onClick)="activateCallback(2)" />
-                            </div>
-                        </ng-template>
-                    </p-step-panel>
-                </p-step-panels>
-            </p-stepper>
-        </div>
 
+                                <div class="flex pt-4 justify-end">
+                                    <p-button label="Next" severity="primary" icon="pi pi-arrow-right"
+                                        (onClick)="activateCallback(2)" />
+                                </div>
 
+                            </ng-template>
+                        </p-step-panel>
 
+                        <p-step-panel [value]="2">
+                            <ng-template #content let-activateCallback="activateCallback">
 
+                                <div class="p-4 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex flex-col gap-4 min-h-[260px]">
 
+                                    <div class="flex flex-col gap-1">
+                                        <label for="cargo" class="font-semibold">Cargo</label>
+                                        <p-select id="cargo" [options]="cargos" optionLabel="label"
+                                            optionValue="value" formControlName="cargo" class="w-full"></p-select>
+                                    </div>
 
+                                    <div class="flex flex-col gap-1">
+                                        <label for="setor" class="font-semibold">Setor/Departamento</label>
+                                        <p-select id="setor" [options]="setores" optionLabel="label"
+                                            optionValue="value" formControlName="setor" class="w-full"></p-select>
+                                    </div>
 
+                                    <div class="flex flex-col gap-1">
+                                        <label for="admissao" class="font-semibold">Data de admissão</label>
+                                        <p-date-picker id="admissao" formControlName="admissao" class="w-full"></p-date-picker>
+                                    </div>
 
+                                </div>
 
-        <!-- <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="md:col-span-2">
-                <label for="nome" class="font-semibold w-24">Nome Completo<span class="font-bold text-red-700">*</span></label>
-                <input pInputText id="nome" class="flex-auto" autocomplete="off" fluid formControlName="nome">
+                                <div class="flex pt-4 justify-between">
+                                    <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
+                                        (onClick)="activateCallback(1)" />
+                                    <p-button label="Next" severity="primary" icon="pi pi-arrow-right"
+                                        (onClick)="activateCallback(3)" />
+                                </div>
 
-            </div> -->
+                            </ng-template>
+                        </p-step-panel>
 
-        <!-- </div> -->
+                        <p-step-panel [value]="3">
+                            <ng-template #content let-activateCallback="activateCallback">
+
+                                <div class="p-4 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex flex-col gap-4 min-h-[260px]">
+
+                                    <div class="flex flex-col gap-1">
+                                        <label for="email" class="font-semibold">E-mail Corporativo</label>
+                                        <input pInputText id="email" type="email" formControlName="email" class="w-full">
+                                    </div>
+
+                                    <div class="flex flex-col gap-1">
+                                        <label for="nivel" class="font-semibold">Nível de permissão</label>
+                                        <p-select id="nivel" [options]="niveis" optionLabel="label"
+                                            optionValue="value" formControlName="nivel" class="w-full"></p-select>
+                                    </div>
+
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="flex flex-col gap-1">
+                                            <label for="senha" class="font-semibold">Senha</label>
+                                            <input pInputText id="senha" type="password" formControlName="senha" class="w-full">
+                                        </div>
+
+                                        <div class="flex flex-col gap-1">
+                                            <label for="confirmarSenha" class="font-semibold">Confirmar Senha</label>
+                                            <input pInputText id="confirmarSenha" type="password" formControlName="confirmarSenha" class="w-full">
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <div class="flex pt-4 justify-between">
+                                    <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
+                                        (onClick)="activateCallback(2)" />
+                                    <p-button label="Salvar" severity="success" icon="pi pi-check" />
+                                </div>
+
+                            </ng-template>
+                        </p-step-panel>
+
+                    </p-step-panels>
+
+                </p-stepper>
+            </div>
+
+        </form>
+
     </p-dialog>
 </div>

@@ -14,6 +14,8 @@ import { ColaboradorResponseModel } from '@/models/colaborador.model';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { Component } from '@angular/core';
 import { StepperModule } from 'primeng/stepper';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+
 
 @Component({
   selector: 'app-list',
@@ -30,31 +32,74 @@ import { StepperModule } from 'primeng/stepper';
     DatePickerModule,
     TextareaModule,
     ReactiveFormsModule,
-    StepperModule],
+    StepperModule,
+  ],
   templateUrl: './list.html',
 })
 export class List {
-  visible = true
+
+  constructor(private fb: FormBuilder) { }
+
+  ngOnInit() {
+    this.formColaborador = this.fb.group({
+      nome: ['', Validators.required],
+      dataNascimento: [null, Validators.required],
+      cpf: ['', Validators.required],
+
+      cargo: [null],
+      setor: [null],
+      admissao: [null],
+
+      email: ['', Validators.email],
+      nivel: [null],
+      senha: [''],
+      confirmarSenha: ['']
+    });
+  }
+
+  formColaborador!: FormGroup;
+
+  cargos = [
+    { label: 'Analista', value: 'analista' },
+    { label: 'Gerente', value: 'gerente' },
+    { label: 'Diretor', value: 'diretor' }
+  ];
+
+  setores = [
+    { label: 'RH', value: 'rh' },
+    { label: 'TI', value: 'ti' },
+    { label: 'Financeiro', value: 'financeiro' }
+  ];
+
+  niveis = [
+    { label: 'Usuário', value: 'user' },
+    { label: 'Administrador', value: 'admin' },
+    { label: 'Super Admin', value: 'superadmin' }
+  ];
+
+
+
+  visible = false;
   filtrosDepartamento = [
-  "Departamento",
-  "Laboratório",
-  "Coleta",
-  "Administrativo",
-  "Operações",
-  "Diretoria"
-];
+    "Departamento",
+    "Laboratório",
+    "Coleta",
+    "Administrativo",
+    "Operações",
+    "Diretoria"
+  ];
   filtroSelecionadoDepartamento: string = "Departamento";
 
   filtrosStatus = [
-  "Status",
-  "Ativo",
-  "Férias",
-  "Afastado" ];
+    "Status",
+    "Ativo",
+    "Férias",
+    "Afastado"];
   filtroSelecionadoStatus: string = "Status";
 
   pesquisa: string = "";
 
-colaboradores: ColaboradorResponseModel[] = [
+  colaboradores: ColaboradorResponseModel[] = [
     {
       "id": "1",
       "nome": "Ana Paula Ribeiro",
@@ -265,14 +310,18 @@ colaboradores: ColaboradorResponseModel[] = [
       "departamento": "Coleta",
       "status": "Inativo"
     }
-]
+  ]
 
 
-somarTotalEquipe(): number {
-  return this.colaboradores.filter(c => c.status !== 'Inativo').length;
-}
+  somarTotalEquipe(): number {
+    return this.colaboradores.filter(c => c.status !== 'Inativo').length;
+  }
 
-somarAnalistasAtivos(): number {
-  return this.colaboradores.filter(c => c.status === 'Ativo' && c.cargo.toLowerCase().includes('analista')).length;
-}
+  somarAnalistasAtivos(): number {
+    return this.colaboradores.filter(c => c.status === 'Ativo' && c.cargo.toLowerCase().includes('analista')).length;
+  }
+
+  cadastrarColaborador() {
+    this.visible = true;
+  }
 }
