@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ButtonModule } from 'primeng/button';
 import { DrawerModule } from 'primeng/drawer';
 import { ToggleSwitchModule } from 'primeng/toggleswitch';
+import { RouterLink } from "@angular/router";
 
 @Component({
   selector: 'app-sidebar',
@@ -13,8 +14,9 @@ import { ToggleSwitchModule } from 'primeng/toggleswitch';
     FormsModule,
     ButtonModule,
     DrawerModule,
-    ToggleSwitchModule
-  ],
+    ToggleSwitchModule,
+    RouterLink
+],
   templateUrl: './sidebar.html',
   styles: [`
     .sidebar-btn .p-button {
