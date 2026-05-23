@@ -1,0 +1,194 @@
+<div class="min-h-screen bg-[#f7f9fb] py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-7xl mx-auto space-y-6">
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Cadastro</p>
+        <h1 class="text-3xl font-bold text-[#1a1a1a]">Nova Metodologia de Análise</h1>
+        <p class="mt-1 text-sm text-slate-600">Crie e valide a metodologia com recursos, criticidade e histórico de modelo.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button type="button" (click)="descartar()"
+          class="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300">
+          <span class="inline-flex h-4 w-4 items-center justify-center text-slate-600">×</span>
+          Descartar
+        </button>
+        <button type="button" (click)="salvar()"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
+          <span class="inline-flex h-4 w-4 items-center justify-center">💾</span>
+          Salvar
+        </button>
+      </div>
+    </div>
+
+    <div class="grid gap-6 xl:grid-cols-[1.5fr_0.9fr]">
+      <div class="space-y-6">
+        <section class="rounded-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
+            <div>
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Informações Gerais</p>
+              <h2 class="text-xl font-bold text-[#1a1a1a]">Dados principais</h2>
+            </div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+              <span class="inline-flex h-4 w-4 items-center justify-center">🧪</span> LIMS Precision
+            </div>
+          </div>
+
+          <form [formGroup]="formMetodologia" class="space-y-5 pt-6">
+            <div class="grid gap-4 sm:grid-cols-2">
+              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                Nome da Metodologia
+                <input type="text" formControlName="nome"
+                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              </label>
+              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                Norma de Referência
+                <input type="text" formControlName="norma"
+                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              </label>
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-3">
+              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                Tempo (min)
+                <input type="number" formControlName="tempo" min="0"
+                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              </label>
+              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                Setor de Execução
+                <select formControlName="setor"
+                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                  <option value="">Selecione</option>
+                  <option *ngFor="let setor of setores" [value]="setor.value">{{ setor.label }}</option>
+                </select>
+              </label>
+              <div class="flex flex-col gap-3 text-sm font-semibold text-slate-700">
+                <span>Nível de Criticidade</span>
+                <div class="grid grid-cols-3 gap-3">
+                  <button type="button" (click)="setCriticidade('baixa')"
+                    [class]="formMetodologia.get('criticidade')?.value === 'baixa'
+                      ? 'rounded-2xl border border-[#1e40af] bg-[#1e40af] px-4 py-3 text-sm font-semibold text-white shadow-sm'
+                      : 'rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-slate-400'">
+                    Baixa
+                  </button>
+                  <button type="button" (click)="setCriticidade('media')"
+                    [class]="formMetodologia.get('criticidade')?.value === 'media'
+                      ? 'rounded-2xl border border-[#1e40af] bg-[#1e40af] px-4 py-3 text-sm font-semibold text-white shadow-sm'
+                      : 'rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-slate-400'">
+                    Média
+                  </button>
+                  <button type="button" (click)="setCriticidade('alta')"
+                    [class]="formMetodologia.get('criticidade')?.value === 'alta'
+                      ? 'rounded-2xl border border-[#1e40af] bg-[#1e40af] px-4 py-3 text-sm font-semibold text-white shadow-sm'
+                      : 'rounded-2xl border border-[#e5e7eb] bg-white px-4 py-3 text-sm text-slate-700 transition hover:border-slate-400'">
+                    Alta
+                  </button>
+                </div>
+              </div>
+            </div>
+          </form>
+        </section>
+
+        <section class="rounded-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
+            <div>
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Recursos Necessários</p>
+              <h2 class="text-xl font-bold text-[#1a1a1a]">Equipamentos e Reagentes</h2>
+            </div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              <span class="inline-flex h-4 w-4 items-center justify-center">⏱️</span> Tempo estimado
+            </div>
+          </div>
+
+          <div class="space-y-6 pt-6">
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-800">Equipamentos</h3>
+                <button type="button" (click)="adicionarEquipamento()"
+                  class="inline-flex items-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400">
+                  <span class="inline-flex h-4 w-4 items-center justify-center">+</span> Adicionar
+                </button>
+              </div>
+              <div class="space-y-3">
+                <div *ngFor="let equipamento of equipamentos.controls; let i = index" [formGroupName]="i"
+                  class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+                  <div class="grid gap-4 sm:grid-cols-[1.3fr_0.7fr_auto]">
+                    <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                      Nome do equipamento
+                      <input type="text" formControlName="nome"
+                        class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                    </label>
+                    <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                      Quantidade
+                      <input type="number" min="1" formControlName="quantidade"
+                        class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                    </label>
+                    <button type="button" (click)="removerEquipamento(i)"
+                      class="inline-flex h-12 items-center justify-center rounded-2xl border border-transparent bg-red-50 px-3 text-red-700 transition hover:bg-red-100">
+                      <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-semibold text-slate-800">Reagentes</h3>
+                <button type="button" (click)="adicionarReagente()"
+                  class="inline-flex items-center gap-2 rounded-xl border border-[#e5e7eb] bg-white px-3 py-2 text-sm font-semibold text-slate-700 transition hover:border-slate-400">
+                  <span class="inline-flex h-4 w-4 items-center justify-center">+</span> Adicionar
+                </button>
+              </div>
+              <div class="space-y-3">
+                <div *ngFor="let reagente of reagentes.controls; let i = index" [formGroupName]="i"
+                  class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+                  <div class="grid gap-4 sm:grid-cols-[1.3fr_0.7fr_auto]">
+                    <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                      Nome do reagente
+                      <input type="text" formControlName="nome"
+                        class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                    </label>
+                    <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                      Quantidade
+                      <input type="number" min="1" formControlName="quantidade"
+                        class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                    </label>
+                    <button type="button" (click)="removerReagente(i)"
+                      class="inline-flex h-12 items-center justify-center rounded-2xl border border-transparent bg-red-50 px-3 text-red-700 transition hover:bg-red-100">
+                      <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <aside class="space-y-6">
+        <section class="rounded-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between gap-3 pb-4 border-b border-[#e5e7eb]">
+            <div>
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Histórico de Modelos</p>
+              <h2 class="text-xl font-bold text-[#1a1a1a]">Últimas versões</h2>
+            </div>
+            <div class="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">3</div>
+          </div>
+          <div class="mt-5 space-y-5">
+            <div *ngFor="let item of historicoModelos" class="space-y-2">
+              <div class="flex items-center gap-3">
+                <span class="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">●</span>
+                <div>
+                  <p class="font-semibold text-slate-900">{{ item.title }}</p>
+                  <p class="text-sm text-slate-500">{{ item.subtitle }}</p>
+                </div>
+              </div>
+              <div class="h-px w-full bg-[#e5e7eb]"></div>
+            </div>
+          </div>
+        </section>
+
+      </aside>
+    </div>
+  </div>
+</div>

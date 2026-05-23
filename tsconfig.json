@@ -52,14 +52,16 @@
         "importHelpers": true,
         "target": "ES2022",
         "module": "ES2022",
+        "rootDir": "./src",
         "baseUrl": "./",
+        "ignoreDeprecations": "5.0",
         "paths": {
             "@/*": [
                 "src/app/*"
             ],
             "@env/*": [
                 "src/environments/*"
-            ],
+            ]
         },
         "noUnusedLocals": true,
         // "noUnusedParameters": true

@@ -1,35 +1,33 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import { ButtonModule } from 'primeng/button';
-import { DrawerModule } from 'primeng/drawer';
-import { ToggleSwitchModule } from 'primeng/toggleswitch';
-import { RouterLink } from "@angular/router";
+import { RouterLink, RouterLinkActive } from '@angular/router';
 
 @Component({
   selector: 'app-sidebar',
   standalone: true,
-  imports: [
-    CommonModule,
-    FormsModule,
-    ButtonModule,
-    DrawerModule,
-    ToggleSwitchModule,
-    RouterLink
-],
+  imports: [CommonModule, RouterLink, RouterLinkActive],
   templateUrl: './sidebar.html',
-  styles: [`
-    .sidebar-btn .p-button {
-      background-color: transparent !important;
-      color: black !important;
-      border: none !important;
-      box-shadow: none !important;
-    }
-    .sidebar-btn .p-button:hover {
-      background-color: #f3f3f3 !important;
-    }
-  `]
 })
 export class Sidebar {
-  visible = true;
+  navItems = [
+    { label: 'Dashboard', icon: 'layout-grid', route: '/dashboard' },
+    { label: 'Comercial', icon: 'briefcase', route: '/comercial' },
+    { label: 'Ordem de Serviço', icon: 'clipboard-list', route: '/ordens' },
+    { label: 'Amostras', icon: 'beaker', route: '/amostras' },
+    { label: 'Recebimento', icon: 'package-plus', route: '/recebimento' },
+    { label: 'Execução Técnica', icon: 'microscope', route: '/execucao' },
+    { label: 'Qualidade e Laudos', icon: 'shield-check', route: '/qualidade' },
+    { label: 'Relatórios', icon: 'bar-chart-3', route: '/relatorios' }
+  ];
+
+  cadastro = [
+    { label: 'Colaboradores', route: '/colaboradores' },
+    { label: 'Clientes', route: '/clientes' }
+  ];
+
+  user = {
+    name: 'Usuário',
+    role: 'Administrador',
+    avatarUrl: null
+  };
 }
