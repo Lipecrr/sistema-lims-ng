@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { LucideAngularModule } from 'lucide-angular';
-import { MetodologiasListService } from './metodologias-list.service';
+import { MetodologiasListService } from '../services/metodologias-list.service';
 import { TempoEstimadoPipe } from './tempo-estimado.pipe';
 import { MetodologiaModel, CriticidadeNivel } from '../../../models/metodologia.model';
 
