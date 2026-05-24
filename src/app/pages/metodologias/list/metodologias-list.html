@@ -1,0 +1,153 @@
+<div class="min-h-screen bg-[#f7f9fb] px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl space-y-6">
+
+    <section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div class="space-y-2">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Gestão de Metodologias</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-950">Listagem de Metodologias de Análise</h1>
+        <p class="max-w-2xl text-sm leading-6 text-slate-600">Visualize e filtre metodologias, normas de referência e criticidade de forma alinhada ao design LIMS Enterprise Core.</p>
+      </div>
+      <a routerLink="/metodologias/novo" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#1e40af] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1c3aa3]">
+        <lucide-angular name="plus" class="h-4 w-4" />
+        Nova Metodologia
+      </a>
+    </section>
+
+    <section class="rounded-[28px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-sm">
+      <div [formGroup]="filtrosForm" class="grid gap-4 xl:grid-cols-[1.85fr_1fr_1fr_auto]">
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Buscar</label>
+          <input type="text" formControlName="search" placeholder="Método ou Norma" class="w-full rounded-[18px] border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1e40af] focus:ring-2 focus:ring-[#c7d2fe]" />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Setor Responsável</label>
+          <select formControlName="setor" class="w-full rounded-[18px] border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1e40af] focus:ring-2 focus:ring-[#c7d2fe]">
+            <option value="">Todos os setores</option>
+            <option *ngFor="let item of setores" [value]="item.value">{{ item.label }}</option>
+          </select>
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Nível de Criticidade</label>
+          <select formControlName="criticidade" class="w-full rounded-[18px] border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1e40af] focus:ring-2 focus:ring-[#c7d2fe]">
+            <option value="">Todas as criticidades</option>
+            <option *ngFor="let item of criticidades" [value]="item.value">{{ item.label }}</option>
+          </select>
+        </div>
+        <div class="flex items-end justify-end gap-3">
+          <button type="button" (click)="limparFiltros()" class="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50">
+            <lucide-angular name="filter" class="h-4 w-4" />
+            Limpar
+          </button>
+          <button type="button" (click)="filtrar()" class="inline-flex h-12 items-center justify-center rounded-2xl bg-[#1e40af] px-5 text-sm font-semibold text-white transition hover:bg-[#1c3aa3]">
+            Filtrar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[28px] border border-[#e5e7eb] bg-white shadow-sm">
+      <div *ngIf="pagedMetodologias$ | async as page" class="overflow-x-auto">
+        <table class="min-w-full border-separate border-spacing-0 text-sm">
+          <thead class="bg-slate-50 text-slate-700">
+            <tr>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">ID/Código</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Nome da Metodologia</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Norma de Referência</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Setor</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Tempo Est.</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Criticidade</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
+            <tr *ngFor="let metodologia of page.items" class="border-b border-slate-100 last:border-none">
+              <td class="px-5 py-4 font-medium text-slate-900">{{ metodologia.codigo }}</td>
+              <td class="px-5 py-4">{{ metodologia.nome }}</td>
+              <td class="px-5 py-4 text-slate-600">{{ metodologia.norma }}</td>
+              <td class="px-5 py-4 text-slate-700">{{ metodologia.setor }}</td>
+              <td class="px-5 py-4 text-slate-700">{{ metodologia.tempoEstimadoMinutos | tempoEstimado }}</td>
+              <td class="px-5 py-4">
+                <span [ngClass]="badgeClass(metodologia.criticidade)" class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold ring-1">
+                  {{ badgeLabel(metodologia.criticidade) }}
+                </span>
+              </td>
+              <td class="px-5 py-4">
+                <div class="flex justify-end gap-2 text-slate-500">
+                  <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
+                    <lucide-angular name="eye" class="h-4 w-4" />
+                  </button>
+                  <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
+                    <lucide-angular name="edit-3" class="h-4 w-4" />
+                  </button>
+                  <button type="button" (click)="removerMetodologia(metodologia.id)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-red-600 transition hover:bg-red-50" aria-label="Excluir">
+                    <lucide-angular name="trash-2" class="h-4 w-4" />
+                  </button>
+                </div>
+              </td>
+            </tr>
+            <tr *ngIf="page.items.length === 0">
+              <td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">Nenhuma metodologia encontrada para os filtros aplicados.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <ng-container *ngIf="pagedMetodologias$ | async as page">
+        <div class="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-sm text-slate-600">
+            Mostrando <span class="font-semibold text-slate-900">{{ page.start }}–{{ page.end }}</span> de <span class="font-semibold text-slate-900">{{ page.total }}</span> metodologias
+          </div>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50" (click)="setPage(page.page - 1)" [disabled]="page.page === 1">
+              <lucide-angular name="chevron-left" class="h-4 w-4" />
+            </button>
+            <ng-container *ngFor="let pageNumber of pageNumbers(page.pageCount)">
+              <button type="button" (click)="setPage(pageNumber)" [class]="page.page === pageNumber ? 'inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-2xl bg-[#1e40af] px-3 text-sm font-semibold text-white transition' : 'inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50'">
+                {{ pageNumber }}
+              </button>
+            </ng-container>
+            <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50" (click)="setPage(page.page + 1)" [disabled]="page.page === page.pageCount">
+              <lucide-angular name="chevron-right" class="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Aguardando Revisão</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.aguardandoRevisao }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#1e40af]">
+            <lucide-angular name="hourglass" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Conformidade Técnica</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.conformidadeTecnica }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-emerald-700">
+            <lucide-angular name="shield" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Métodos Obsoletos</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.metodosObsoletos }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-amber-700">
+            <lucide-angular name="alert-triangle" class="h-6 w-6" />
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

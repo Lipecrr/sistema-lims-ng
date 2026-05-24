@@ -22,7 +22,8 @@ export class Sidebar {
 
   cadastro = [
     { label: 'Colaboradores', route: '/colaboradores' },
-    { label: 'Clientes', route: '/clientes' }
+    { label: 'Clientes', route: '/clientes' },
+    { label: 'Metodologias', route: '/metodologias' },
   ];
 
   user = {
