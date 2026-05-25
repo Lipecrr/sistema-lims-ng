@@ -27,66 +27,6 @@ export class MetodologiasListService {
       criticidade: 'media',
       obsoleto: false,
     },
-    {
-      id: '3',
-      codigo: 'MT-003',
-      nome: 'Contagem de Colônias em Aguas',
-      norma: 'NBR 14370',
-      setor: 'Microbiologia',
-      tempoEstimadoMinutos: 90,
-      criticidade: 'baixa',
-      obsoleto: false,
-    },
-    {
-      id: '4',
-      codigo: 'MT-004',
-      nome: 'Perfil Cromatográfico de Pesticidas',
-      norma: 'NBR 15571',
-      setor: 'Química',
-      tempoEstimadoMinutos: 220,
-      criticidade: 'alta',
-      obsoleto: true,
-    },
-    {
-      id: '5',
-      codigo: 'MT-005',
-      nome: 'Análise de Dureza de Água',
-      norma: 'NBR 6465',
-      setor: 'Ambiental',
-      tempoEstimadoMinutos: 60,
-      criticidade: 'baixa',
-      obsoleto: false,
-    },
-    {
-      id: '6',
-      codigo: 'MT-006',
-      nome: 'Detecção de Metais Pesados por ICP-OES',
-      norma: 'NBR 15824',
-      setor: 'Controle de Qualidade',
-      tempoEstimadoMinutos: 205,
-      criticidade: 'alta',
-      obsoleto: false,
-    },
-    {
-      id: '7',
-      codigo: 'MT-007',
-      nome: 'Determinação de pH em Amostras',
-      norma: 'NBR 12123',
-      setor: 'Química',
-      tempoEstimadoMinutos: 25,
-      criticidade: 'baixa',
-      obsoleto: false,
-    },
-    {
-      id: '8',
-      codigo: 'MT-008',
-      nome: 'Avaliação de Oxigênio Dissolvido',
-      norma: 'NBR 13268',
-      setor: 'Ambiental',
-      tempoEstimadoMinutos: 95,
-      criticidade: 'media',
-      obsoleto: true,
-    },
   ];
 
   private readonly metodologiasSubject = new BehaviorSubject<MetodologiaModel[]>(this.initialData);
@@ -97,6 +37,10 @@ export class MetodologiasListService {
 
   fetchMetodologias(): Observable<MetodologiaModel[]> {
     return this.metodologias$.pipe(delay(120));
+  }
+
+  addMetodologia(metodologia: MetodologiaModel): void {
+    this.metodologiasSubject.next([...this.metodologiasSubject.value, metodologia]);
   }
 
   deleteMetodologia(id: string): void {

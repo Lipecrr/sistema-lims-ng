@@ -1,3 +1,5 @@
+import { AnaliseModel } from './analise.model';
+
 export type CriticidadeNivel = 'baixa' | 'media' | 'alta';
 
 export interface MetodologiaModel {
@@ -9,4 +11,5 @@ export interface MetodologiaModel {
   tempoEstimadoMinutos: number;
   criticidade: CriticidadeNivel;
   obsoleto: boolean;
+  analises?: AnaliseModel[];
 }

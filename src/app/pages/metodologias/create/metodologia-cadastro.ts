@@ -1,16 +1,99 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { MetodologiaCadastroService } from '@/services/metodologia-cadastro.service';
+import { TipoAmostra, UnidadeMedida, AnaliseModel } from '@/models/analise.model';
+
+interface Equipamento {
+  nome: string;
+  quantidade: number;
+}
+
+interface Reagente {
+  nome: string;
+  quantidade: number;
+}
 
 @Component({
   selector: 'app-metodologia-cadastro',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './metodologia-cadastro.html',
 })
 export class MetodologiaCadastro implements OnInit {
   formMetodologia!: FormGroup;
+  abaAtiva = 'dados'; // 'dados', 'recursos', 'analises'
+
+  // Arrays para Equipamentos, Reagentes e Análises
+  equipamentos: Equipamento[] = [];
+  reagentes: Reagente[] = [];
+  analises: AnaliseModel[] = [];
+
+  // Campos temporários para adicionar
+  equipamentoNome = '';
+  equipamentoQuantidade: number | null = null;
+
+  reagenteNome = '';
+  reagenteQuantidade: number | null = null;
+
+  analiseNome = '';
+  analiseTipo: TipoAmostra = 'agua';
+  analiseUnidade: UnidadeMedida = 'mg/L';
+  analiseIncerteza: number | null = null;
+  analiseLQ: number | null = null;
+  analiseLD: number | null = null;
+  analiseEditIndex: number | null = null;
+
+  tiposAmostra: { label: string; value: TipoAmostra }[] = [
+    { label: 'Água', value: 'agua' },
+    { label: 'Efluente', value: 'efluente' },
+    { label: 'Solo', value: 'solo' }
+  ];
+
+  unidadesPorTipo: Record<TipoAmostra, { label: string; value: UnidadeMedida }[]> = {
+    agua: [
+      { label: 'mg/L', value: 'mg/L' },
+      { label: 'µg/L', value: 'µg/L' },
+      { label: 'ng/L', value: 'ng/L' },
+      { label: 'pg/L', value: 'pg/L' },
+      { label: 'pH', value: 'pH' },
+      { label: 'mS/cm', value: 'mS/cm' },
+      { label: 'mV', value: 'mV' },
+      { label: 'NTU', value: 'NTU' },
+      { label: 'mg/L CaCO₃', value: 'mg/L CaCO₃' },
+      { label: 'UFC/mL', value: 'UFC/mL' },
+      { label: 'UFC/100mL', value: 'UFC/100mL' },
+      { label: 'MPN/100mL', value: 'MPN/100mL' }
+    ],
+    efluente: [
+      { label: 'mg/L', value: 'mg/L' },
+      { label: 'µg/L', value: 'µg/L' },
+      { label: 'ng/L', value: 'ng/L' },
+      { label: 'mg/m³', value: 'mg/m³' },
+      { label: 'µg/m³', value: 'µg/m³' },
+      { label: 'pH', value: 'pH' },
+      { label: 'mS/cm', value: 'mS/cm' },
+      { label: 'NTU', value: 'NTU' },
+      { label: 'UFC/mL', value: 'UFC/mL' },
+      { label: 'UFC/100mL', value: 'UFC/100mL' },
+      { label: 'MPN/100mL', value: 'MPN/100mL' }
+    ],
+    solo: [
+      { label: 'mg/kg', value: 'mg/kg' },
+      { label: 'µg/kg', value: 'µg/kg' },
+      { label: 'ng/kg', value: 'ng/kg' },
+      { label: '%', value: '%' },
+      { label: 'cmol/kg', value: 'cmol/kg' },
+      { label: 'mmol/kg', value: 'mmol/kg' },
+      { label: 'g/kg', value: 'g/kg' },
+      { label: 'mg/dm³', value: 'mg/dm³' }
+    ]
+  };
 
   historicoModelos = [
     { title: 'Template Padrão', subtitle: 'Criado em 18/04/2026', status: 'Base' },
@@ -31,7 +114,7 @@ export class MetodologiaCadastro implements OnInit {
     { label: 'Alta', value: 'alta' }
   ];
 
-  constructor(private fb: FormBuilder, private service: MetodologiaCadastroService) {}
+  constructor(private fb: FormBuilder, private service: MetodologiaCadastroService, private router: Router, private messageService: MessageService, private confirmationService: ConfirmationService) {}
 
   ngOnInit() {
     this.formMetodologia = this.fb.group({
@@ -39,85 +122,184 @@ export class MetodologiaCadastro implements OnInit {
       norma: ['', Validators.required],
       tempo: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       setor: ['', Validators.required],
-      criticidade: ['media', Validators.required],
-      equipamentos: this.fb.array([this.createEquipamentoGroup()]),
-      reagentes: this.fb.array([this.createReagenteGroup()])
+      criticidade: ['media', Validators.required]
     });
   }
 
-  get equipamentos(): FormArray {
-    return this.formMetodologia.get('equipamentos') as FormArray;
-  }
-
-  get reagentes(): FormArray {
-    return this.formMetodologia.get('reagentes') as FormArray;
-  }
-
-  createEquipamentoGroup(): FormGroup {
-    return this.fb.group({
-      nome: ['', Validators.required],
-      quantidade: ['', [Validators.required, Validators.pattern('^[0-9]+$')]]
-    });
-  }
-
-  createReagenteGroup(): FormGroup {
-    return this.fb.group({
-      nome: ['', Validators.required],
-      quantidade: ['', [Validators.required, Validators.pattern('^[0-9]+$')]]
-    });
-  }
-
+  // EQUIPAMENTOS
   adicionarEquipamento() {
-    this.equipamentos.push(this.createEquipamentoGroup());
+    if (!this.equipamentoNome || !this.equipamentoQuantidade) {
+      alert('Preencha o nome e quantidade do equipamento');
+      return;
+    }
+    this.equipamentos = [...this.equipamentos, { nome: this.equipamentoNome, quantidade: this.equipamentoQuantidade }];
+    this.equipamentoNome = '';
+    this.equipamentoQuantidade = null;
   }
 
   removerEquipamento(index: number) {
-    if (this.equipamentos.length > 1) {
-      this.equipamentos.removeAt(index);
-    }
+    this.equipamentos = this.equipamentos.filter((_, i) => i !== index);
   }
 
+  // REAGENTES
   adicionarReagente() {
-    this.reagentes.push(this.createReagenteGroup());
+    if (!this.reagenteNome || !this.reagenteQuantidade) {
+      alert('Preencha o nome e quantidade do reagente');
+      return;
+    }
+    this.reagentes = [...this.reagentes, { nome: this.reagenteNome, quantidade: this.reagenteQuantidade }];
+    this.reagenteNome = '';
+    this.reagenteQuantidade = null;
   }
 
   removerReagente(index: number) {
-    if (this.reagentes.length > 1) {
-      this.reagentes.removeAt(index);
+    this.reagentes = this.reagentes.filter((_, i) => i !== index);
+  }
+
+  // ANÁLISES
+  getUnidadesPorTipo(tipoAmostra: TipoAmostra): { label: string; value: UnidadeMedida }[] {
+    return this.unidadesPorTipo[tipoAmostra] || [];
+  }
+
+  getTipoAmostraLabel(tipoAmostra: TipoAmostra): string {
+    return this.tiposAmostra.find(tipo => tipo.value === tipoAmostra)?.label || 'Desconhecido';
+  }
+
+  atualizarUnidade() {
+    const unidades = this.getUnidadesPorTipo(this.analiseTipo);
+    if (unidades.length > 0 && !unidades.find(u => u.value === this.analiseUnidade)) {
+      this.analiseUnidade = unidades[0].value;
     }
+  }
+
+  adicionarAnalise() {
+    if (!this.analiseNome || !this.analiseUnidade || this.analiseIncerteza == null || this.analiseLQ == null || this.analiseLD == null) {
+      alert('Preencha todos os campos obrigatórios da análise');
+      return;
+    }
+
+    const analisePayload: AnaliseModel = {
+      identificacao: this.analiseNome,
+      tipoAmostra: this.analiseTipo,
+      unidadeMedida: this.analiseUnidade,
+      incerteza: this.analiseIncerteza,
+      lq: this.analiseLQ,
+      ld: this.analiseLD
+    };
+
+    if (this.analiseEditIndex !== null) {
+      this.analises = this.analises.map((item, index) => index === this.analiseEditIndex ? analisePayload : item);
+    } else {
+      this.analises = [...this.analises, analisePayload];
+    }
+
+    this.cancelarEdicaoAnalise();
+  }
+
+  editarAnalise(index: number) {
+    const analise = this.analises[index];
+    if (!analise) {
+      return;
+    }
+
+    this.analiseEditIndex = index;
+    this.analiseNome = analise.identificacao;
+    this.analiseTipo = analise.tipoAmostra;
+    this.analiseUnidade = analise.unidadeMedida;
+    this.analiseIncerteza = analise.incerteza;
+    this.analiseLQ = analise.lq;
+    this.analiseLD = analise.ld;
+    this.trocarAba('analises');
+  }
+
+  cancelarEdicaoAnalise() {
+    this.analiseEditIndex = null;
+    this.analiseNome = '';
+    this.analiseTipo = 'agua';
+    this.analiseUnidade = 'mg/L';
+    this.analiseIncerteza = null;
+    this.analiseLQ = null;
+    this.analiseLD = null;
+  }
+
+  removerAnalise(index: number) {
+    this.analises = this.analises.filter((_, i) => i !== index);
   }
 
   setCriticidade(value: string) {
     this.formMetodologia.get('criticidade')?.setValue(value);
   }
 
+  trocarAba(aba: string) {
+    this.abaAtiva = aba;
+  }
+
   async salvar() {
     if (this.formMetodologia.invalid) {
+      this.messageService.add({ severity: 'warn', summary: 'Atenção', detail: 'Preencha todos os campos obrigatórios do formulário.' });
       this.formMetodologia.markAllAsTouched();
       return;
     }
 
-    await this.service.save(this.formMetodologia);
-    alert('Metodologia de Análise salva com sucesso.');
+    const dados = {
+      ...this.formMetodologia.value,
+      equipamentos: this.equipamentos,
+      reagentes: this.reagentes,
+      analises: this.analises
+    };
+
+    try {
+      await this.service.save(dados);
+      this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Metodologia de Análise salva com sucesso!' });
+      
+      // Aguarda um pouco para exibir a mensagem antes de navegar
+      setTimeout(() => {
+        this.router.navigate(['/metodologias']);
+      }, 1500);
+    } catch (error) {
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar a metodologia. Tente novamente.' });
+      console.error('Erro ao salvar:', error);
+    }
   }
 
   descartar() {
-    this.formMetodologia.reset({
-      nome: '',
-      norma: '',
-      tempo: '',
-      setor: '',
-      criticidade: 'media'
+    this.confirmationService.confirm({
+      message: 'Tem certeza que deseja descartar esta metodologia? Todos os dados serão perdidos.',
+      header: 'Confirmar Descarte',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      accept: () => {
+        this.formMetodologia.reset({
+          nome: '',
+          norma: '',
+          tempo: '',
+          setor: '',
+          criticidade: 'media'
+        });
+
+        this.equipamentos = [];
+        this.equipamentoNome = '';
+        this.equipamentoQuantidade = null;
+
+        this.reagentes = [];
+        this.reagenteNome = '';
+        this.reagenteQuantidade = null;
+
+        this.analises = [];
+        this.analiseNome = '';
+        this.analiseTipo = 'agua';
+        this.analiseUnidade = 'mg/L';
+        this.analiseIncerteza = null;
+        this.analiseLQ = null;
+        this.analiseLD = null;
+        this.analiseEditIndex = null;
+
+        this.messageService.add({ severity: 'info', summary: 'Descartado', detail: 'Metodologia descartada com sucesso.' });
+        
+        setTimeout(() => {
+          this.router.navigate(['/metodologias']);
+        }, 1500);
+      }
     });
-
-    while (this.equipamentos.length > 0) {
-      this.equipamentos.removeAt(0);
-    }
-    this.equipamentos.push(this.createEquipamentoGroup());
-
-    while (this.reagentes.length > 0) {
-      this.reagentes.removeAt(0);
-    }
-    this.reagentes.push(this.createReagenteGroup());
   }
 }
