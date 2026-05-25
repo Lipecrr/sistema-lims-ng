@@ -1,200 +1,88 @@
-<div class="space-y-6 max-w-7xl mx-auto">
-
-    <div class="flex justify-between">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Tipos de Amostras</h1>
-            <p class="text-gray-600">Crie e gerencie os os tipos de amostras.</p>
-        </div>
-
-        <p-button label="Criar Tipo de Amostra" icon="fa-solid fa-user-plus" [raised]="true" severity="info"
-            (onClick)="cadastrarTipoDeAmostra()"></p-button>
-    </div>
-    <div class="bg-white rounded-xl shadow-sm p-4">
-        <div class="flex flex-row gap-4">
-            <input pInputText placeholder="Busca por Tipo de amostra" fluid [(ngModel)]="pesquisa" [pAutoFocus]="true">
-
-            <p-select [options]="filtrosStatus" [(ngModel)]="filtroSelecionadoStatus"></p-select>
-        </div>
+﻿<div class="space-y-6 max-w-7xl mx-auto">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Amostras Padrão</h1>
+      <p class="text-slate-600">Visualize e gerencie amostras padrão que serão utilizadas em propostas e ordens de serviço.</p>
     </div>
 
+    <a routerLink="/tipos-amostras/novo" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+      Criar Tipo de Amostra
+    </a>
+  </div>
 
-    <p-table [value]="amostras" [tableStyle]="{ 'min-width': '50rem' }" [paginator]="true" [rows]="5"
-        [rowsPerPageOptions]="[5, 10, 20]">
-        <ng-template #header>
-            <tr>
-                <th>Id</th>
-                <th>Tipo de Amostra</th>
-                <th>Tipo de Publicação</th>
-                <th>Status</th>
-                <th>
-                    <div class="text-right">Ações</div>
-                </th>
-            </tr>
-        </ng-template>
-        <ng-template #body let-colaborador>
-            <tr>
-                <td>{{ amostras.id }}</td>
-                <td>{{ amostras.tipo }}</td>
-                <td>{{ amostras.publicacao }}</td>
-                <td>
-                    <app-registro-status-tag [status]="amostras.status" />
-                </td>
-                <td>
-                    <div class="flex gap-1 justify-end">
-                        <p-button icon="fa-regular fa-pen-to-square" variant="text" severity="info" />
-                        <p-button icon="fa fa-trash" variant="text" severity="danger" />
-                    </div>
-                </td>
-            </tr>
-        </ng-template>
-    </p-table>
-</div>
+  <section class="rounded-[24px] border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="grid gap-4 md:grid-cols-[1.5fr_1fr_auto]">
+      <div>
+        <label class="block text-sm font-semibold text-slate-700">Buscar</label>
+        <input
+          type="text"
+          [(ngModel)]="pesquisa"
+          (input)="filtrar()"
+          placeholder="Busque por tipo ou publicação"
+          class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-semibold text-slate-700">Status</label>
+        <select
+          [(ngModel)]="filtroSelecionadoStatus"
+          (change)="filtrar()"
+          class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+        >
+          <option *ngFor="let option of statusOptions" [value]="option">{{ option }}</option>
+        </select>
+      </div>
+      <button
+        type="button"
+        (click)="limparFiltros()"
+        class="mt-6 inline-flex h-12 items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+      >
+        Limpar
+      </button>
+    </div>
+  </section>
 
-<div class="card flex justify-center">
-    <p-dialog header="Cadastro de Novo Tipo de Amostra" [modal]="true" [(visible)]="visible"
-        [style]="{ width: '50rem' }" [breakpoints]="{ '1199px': '75vw', '575px': '90vw' }">
-
-        <form [formGroup]="formAmostras" class="w-full">
-
-            <div class="card flex justify-center w-full">
-                <p-stepper [value]="1" class="w-full">
-
-                    <p-step-list>
-                        <p-step [value]="1">
-                            <p class="font-semibold">Identificação</p>
-                        </p-step>
-                        <p-step [value]="2">
-                            <p class="font-semibold">Informações</p>
-                        </p-step>
-                    </p-step-list>
-
-                    <p-step-panels>
-
-                        <p-step-panel [value]="1">
-                            <ng-template #content let-activateCallback="activateCallback">
-
-                                <div
-                                    class="p-4 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex flex-col gap-4 min-h-[260px]">
-
-                                    <div class="flex flex-col gap-1">
-                                        <label for="identificacao" class="font-semibold">
-                                            Identificação <span class="text-red-700">*</span>
-                                        </label>
-                                        <input pInputText id="identificacao" formControlName="identificacao"
-                                            class="w-full">
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="flex flex-col gap-1">
-                                            <label for="motivo" class="font-semibold">Motivo da Amostra</label>
-                                            <p-select id="motivo" [options]="motivo" optionLabel="label"
-                                                optionValue="value" formControlName="motivo" class="w-full"></p-select>
-                                        </div>
-
-                                        <div class="flex flex-col gap-1">
-                                            <label for="cpf" class="font-semibold">
-                                                CPF <span class="text-red-700">*</span>
-                                            </label>
-                                            <p-inputmask mask="999.999.999-99" id="cpf" formControlName="cpf"
-                                                class="w-full"></p-inputmask>
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <div class="flex pt-4 justify-end">
-                                    <p-button label="Next" severity="primary" icon="pi pi-arrow-right"
-                                        (onClick)="activateCallback(2)" />
-                                </div>
-
-                            </ng-template>
-                        </p-step-panel>
-
-                        <p-step-panel [value]="2">
-                            <ng-template #content let-activateCallback="activateCallback">
-
-                                <div
-                                    class="p-4 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex flex-col gap-4 min-h-[260px]">
-
-                                    <div class="flex flex-col gap-1">
-                                        <label for="cargo" class="font-semibold">Cargo</label>
-                                        <p-select id="cargo" [options]="cargos" optionLabel="label" optionValue="value"
-                                            formControlName="cargo" class="w-full"></p-select>
-                                    </div>
-
-                                    <div class="flex flex-col gap-1">
-                                        <label for="setor" class="font-semibold">Setor/Departamento</label>
-                                        <p-select id="setor" [options]="setores" optionLabel="label" optionValue="value"
-                                            formControlName="setor" class="w-full"></p-select>
-                                    </div>
-
-                                    <div class="flex flex-col gap-1">
-                                        <label for="admissao" class="font-semibold">Data de admissão</label>
-                                        <p-date-picker id="admissao" formControlName="admissao"
-                                            class="w-full"></p-date-picker>
-                                    </div>
-
-                                </div>
-
-                                <div class="flex pt-4 justify-between">
-                                    <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                        (onClick)="activateCallback(1)" />
-                                    <p-button label="Next" severity="primary" icon="pi pi-arrow-right"
-                                        (onClick)="activateCallback(3)" />
-                                </div>
-
-                            </ng-template>
-                        </p-step-panel>
-
-                        <p-step-panel [value]="3">
-                            <ng-template #content let-activateCallback="activateCallback">
-
-                                <div
-                                    class="p-4 border-2 border-dashed border-surface-200 dark:border-surface-700 rounded bg-surface-50 dark:bg-surface-950 flex flex-col gap-4 min-h-[260px]">
-
-                                    <div class="flex flex-col gap-1">
-                                        <label for="email" class="font-semibold">E-mail Corporativo</label>
-                                        <input pInputText id="email" type="email" formControlName="email"
-                                            class="w-full">
-                                    </div>
-
-                                    <div class="flex flex-col gap-1">
-                                        <label for="nivel" class="font-semibold">Nível de permissão</label>
-                                        <p-select id="nivel" [options]="niveis" optionLabel="label" optionValue="value"
-                                            formControlName="nivel" class="w-full"></p-select>
-                                    </div>
-
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="flex flex-col gap-1">
-                                            <label for="senha" class="font-semibold">Senha</label>
-                                            <input pInputText id="senha" type="password" formControlName="senha"
-                                                class="w-full">
-                                        </div>
-
-                                        <div class="flex flex-col gap-1">
-                                            <label for="confirmarSenha" class="font-semibold">Confirmar Senha</label>
-                                            <input pInputText id="confirmarSenha" type="password"
-                                                formControlName="confirmarSenha" class="w-full">
-                                        </div>
-                                    </div>
-
-                                </div>
-
-                                <div class="flex pt-4 justify-between">
-                                    <p-button label="Back" severity="secondary" icon="pi pi-arrow-left"
-                                        (onClick)="activateCallback(2)" />
-                                    <p-button label="Salvar" severity="success" icon="pi pi-check" />
-                                </div>
-
-                            </ng-template>
-                        </p-step-panel>
-
-                    </p-step-panels>
-
-                </p-stepper>
+  <section class="overflow-x-auto rounded-[24px] border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-slate-700">
+        <tr>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">ID</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Tipo de Amostra</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Motivo da Amostra</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Publicação Manual</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Status</th>
+          <th class="px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
+        <tr *ngFor="let item of filteredAmostras">
+          <td class="px-5 py-4 font-medium text-slate-900">{{ item.id }}</td>
+          <td class="px-5 py-4">{{ item.tipo }}</td>
+          <td class="px-5 py-4 text-slate-700">{{ item.motivo }}</td>
+          <td class="px-5 py-4 text-slate-700">{{ item.publicacaoManual ? 'Sim' : 'Não' }}</td>
+          <td class="px-5 py-4"><app-registro-status-tag [status]="item.status"></app-registro-status-tag></td>
+          <td class="px-5 py-4">
+            <div class="flex justify-end gap-2">
+              <button
+                type="button"
+                class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100"
+              >
+                Editar
+              </button>
+              <button
+                type="button"
+                (click)="removerTipo(item.id)"
+                class="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 transition hover:bg-red-100"
+              >
+                Excluir
+              </button>
             </div>
-
-        </form>
-
-    </p-dialog>
+          </td>
+        </tr>
+        <tr *ngIf="filteredAmostras.length === 0">
+          <td colspan="5" class="px-5 py-10 text-center text-sm text-slate-500">Nenhum tipo de amostra encontrado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 </div>

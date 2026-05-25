@@ -6,5 +6,7 @@ export const routes: Routes = [
     { path: 'clientes', loadComponent: () => import('./pages/clientes/list/list.js').then((m) => m.List) },
     { path: 'clientes/novo', loadComponent: () => import('./pages/clientes/create/cliente-cadastro.js').then((m) => m.ClienteCadastro) },
     { path: 'metodologias', loadComponent: () => import('./pages/metodologias/list/metodologias-list.js').then((m) => m.MetodologiasList) },
-    { path: 'metodologias/novo', loadComponent: () => import('./pages/metodologias/create/metodologia-cadastro.js').then((m) => m.MetodologiaCadastro) }
+    { path: 'metodologias/novo', loadComponent: () => import('./pages/metodologias/create/metodologia-cadastro.js').then((m) => m.MetodologiaCadastro) },
+    { path: 'tipos-amostras', loadComponent: () => import('./pages/tipos-amostras/list/list.js').then((m) => m.List) },
+    { path: 'tipos-amostras/novo', loadComponent: () => import('./pages/tipos-amostras/create/tipo-amostra-cadastro.js').then((m) => m.TipoAmostraCadastro) }
 ];

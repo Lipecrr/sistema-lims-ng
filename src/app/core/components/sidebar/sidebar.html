@@ -1,6 +1,5 @@
 <aside class="w-64 h-screen fixed left-0 top-0 bg-[#1e293b] text-slate-100 shadow-lg flex flex-col">
   <div class="flex flex-col h-full">
-    <!-- Header / Logo -->
     <div class="px-6 py-5 flex items-center gap-3 border-b border-slate-800">
       <div class="h-10 w-10 rounded-md bg-blue-700 flex items-center justify-center text-white font-bold">LP</div>
       <div>
@@ -9,13 +8,11 @@
       </div>
     </div>
 
-    <!-- Navigation list -->
     <nav class="flex-1 overflow-y-auto px-0 py-4">
       <ul class="space-y-1">
         <li *ngFor="let item of navItems">
           <a [routerLink]="item.route" routerLinkActive="bg-[#1e40af] text-white" class="flex items-center gap-3 pl-6 py-3 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors">
             <span class="w-6 h-6 flex items-center justify-center text-slate-200">
-              <!-- simple inline icons (fallback) -->
               <ng-container *ngIf="item.icon === 'layout-grid'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="8" height="8" /><rect x="13" y="3" width="8" height="8" /><rect x="3" y="13" width="8" height="8" /><rect x="13" y="13" width="8" height="8" /></svg> </ng-container>
               <ng-container *ngIf="item.icon === 'briefcase'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v2"/></svg> </ng-container>
               <ng-container *ngIf="item.icon === 'clipboard-list'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 2h6v4H9z"/><rect x="4" y="6" width="16" height="16" rx="2"/><path d="M8 11h8M8 15h8"/></svg> </ng-container>
@@ -43,7 +40,6 @@
       </div>
     </nav>
 
-    <!-- Footer: CTA + Profile -->
     <div class="px-6 py-4 border-t border-slate-800">
       <button class="w-full text-left inline-flex items-center gap-3 bg-[#1e40af] hover:bg-blue-800 text-white px-4 py-2 rounded-md font-semibold">+ Nova Ordem de Serviço</button>
       <div class="mt-4 flex items-center gap-3">
