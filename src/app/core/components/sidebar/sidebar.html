@@ -1,25 +1,59 @@
-<aside class="w-64 bg-white border-r shadow-sm fixed inset-y-0 left-0">
-  <div class="flex flex-col h-auto p-4 gap-2">
+<aside class="w-64 h-screen fixed left-0 top-0 bg-[#1e293b] text-slate-100 shadow-lg flex flex-col">
+  <div class="flex flex-col h-full">
+    <!-- Header / Logo -->
+    <div class="px-6 py-5 flex items-center gap-3 border-b border-slate-800">
+      <div class="h-10 w-10 rounded-md bg-blue-700 flex items-center justify-center text-white font-bold">LP</div>
+      <div>
+        <div class="text-sm font-bold">LIMS Precision</div>
+        <div class="text-xs text-slate-300">Lab Management</div>
+      </div>
+    </div>
 
-    <h2 class="text-lg font-bold mb-2">Menu</h2>
+    <!-- Navigation list -->
+    <nav class="flex-1 overflow-y-auto px-0 py-4">
+      <ul class="space-y-1">
+        <li *ngFor="let item of navItems">
+          <a [routerLink]="item.route" routerLinkActive="bg-[#1e40af] text-white" class="flex items-center gap-3 pl-6 py-3 text-sm font-medium hover:bg-slate-800 hover:text-white transition-colors">
+            <span class="w-6 h-6 flex items-center justify-center text-slate-200">
+              <!-- simple inline icons (fallback) -->
+              <ng-container *ngIf="item.icon === 'layout-grid'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="3" y="3" width="8" height="8" /><rect x="13" y="3" width="8" height="8" /><rect x="3" y="13" width="8" height="8" /><rect x="13" y="13" width="8" height="8" /></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'briefcase'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2H10a2 2 0 0 0-2 2v2"/></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'clipboard-list'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M9 2h6v4H9z"/><rect x="4" y="6" width="16" height="16" rx="2"/><path d="M8 11h8M8 15h8"/></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'beaker'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M10 2v6.5"/><path d="M4 10h16l-4 8H8z"/></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'package-plus'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M21 16V8a2 2 0 0 0-1-1.73L12 3 4 6.27A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73L12 21l8-3.27A2 2 0 0 0 21 16z"/><path d="M12 7v6M9 10h6"/></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'microscope'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M6 21h12"/><path d="M7 7l5 5"/><path d="M17 3l-4 4"/></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'shield-check'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 2l7 4v5c0 5-3 9-7 11-4-2-7-6-7-11V6l7-4z"/><path d="M9 12l2 2 4-4"/></svg> </ng-container>
+              <ng-container *ngIf="item.icon === 'bar-chart-3'"> <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M3 3v18h18"/><path d="M7 12v6"/><path d="M12 8v10"/><path d="M17 4v14"/></svg> </ng-container>
+            </span>
+            <span class="truncate">{{ item.label }}</span>
+          </a>
+        </li>
+      </ul>
 
-    <p-button label="Dashboard" icon="pi pi-home" styleClass="w-full justify-start b" variant="text" severity="secondary"></p-button>
-    <p-button label="Comercial" icon="pi pi-briefcase" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
-    <p-button label="Ordem de Serviço" icon="pi pi-file-edit" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
-    <p-button label="Amostras" icon="pi pi-flask" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
-    <p-button label="Recebimento" icon="pi pi-inbox" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
-    <p-button label="Execução Técnica" icon="pi pi-cog" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
-    <p-button label="Qualidade e Laudos" icon="pi pi-check-circle" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
-    <p-button label="Relatórios" icon="pi pi-chart-line" styleClass="w-full justify-start" variant="text" severity="secondary"></p-button>
+      <div class="mt-4 px-6 pt-4">
+        <div class="text-xs uppercase text-slate-400 font-semibold">Cadastro</div>
+        <ul class="mt-2 space-y-1">
+          <li *ngFor="let sub of cadastro">
+            <a [routerLink]="sub.route" routerLinkActive="bg-[#1e40af] text-white" class="flex items-center gap-3 pl-8 py-2 text-sm hover:bg-slate-800 rounded-md transition-colors">
+              <span class="w-5 h-5 text-slate-200">⚙️</span>
+              <span>{{ sub.label }}</span>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </nav>
 
-    <div class="border-t my-2"></div>
-
-    <span class="text-xs font-semibold uppercase text-gray-500 px-2">
-      Cadastro
-    </span>
-
-    <p-button label="Colaboradores" icon="pi pi-users" styleClass="w-full justify-start pl-6" variant="text" severity="secondary" [routerLink]="['/colaboradores']"></p-button>
-    <p-button label="Clientes" icon="pi pi-id-card" styleClass="w-full justify-start pl-6" variant="text" severity="secondary" [routerLink]="['/clientes']"></p-button>
-
+    <!-- Footer: CTA + Profile -->
+    <div class="px-6 py-4 border-t border-slate-800">
+      <button class="w-full text-left inline-flex items-center gap-3 bg-[#1e40af] hover:bg-blue-800 text-white px-4 py-2 rounded-md font-semibold">+ Nova Ordem de Serviço</button>
+      <div class="mt-4 flex items-center gap-3">
+        <div class="h-10 w-10 rounded-full bg-slate-700 flex items-center justify-center text-white">U</div>
+        <div class="flex-1">
+          <div class="text-sm font-semibold">{{ user.name }}</div>
+          <div class="text-xs text-slate-400">{{ user.role }}</div>
+        </div>
+        <button class="text-slate-300 hover:text-white">Logout</button>
+      </div>
+    </div>
   </div>
 </aside>
