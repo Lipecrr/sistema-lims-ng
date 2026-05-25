@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { TipoAmostraResponseModel } from '../../../models/tipo-amostra.model';
+import { TipoAmostraResponseModel } from '@/models/tipo-amostra.model';
 
 @Injectable({
   providedIn: 'root',

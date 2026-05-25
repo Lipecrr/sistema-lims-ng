@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { MetodologiaCadastroService } from '../services/metodologia-cadastro.service';
+import { MetodologiaCadastroService } from '@/services/metodologia-cadastro.service';
 
 @Component({
   selector: 'app-metodologia-cadastro',

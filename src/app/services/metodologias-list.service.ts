@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject, Observable, delay } from 'rxjs';
-import { MetodologiaModel } from '../../../models/metodologia.model';
+import { MetodologiaModel } from '@/models/metodologia.model';
 
 @Injectable({
   providedIn: 'root',

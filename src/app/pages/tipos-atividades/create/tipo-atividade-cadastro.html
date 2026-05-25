@@ -1,0 +1,179 @@
+<div class="space-y-6 max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Cadastro</p>
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-950">Novo Tipo de Atividade</h1>
+      <p class="max-w-2xl text-sm leading-6 text-slate-600">Defina o template de atividade usado em propostas e ordens de serviço.</p>
+    </div>
+    <button
+      type="button"
+      routerLink="/"
+      class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+    >
+      Voltar
+    </button>
+  </div>
+
+  <div class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <button
+        type="button"
+        (click)="setTab('detalhes')"
+        [class]="currentTab === 'detalhes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
+      >
+        Detalhes
+      </button>
+      <button
+        type="button"
+        (click)="setTab('fluxo')"
+        [class]="currentTab === 'fluxo' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
+      >
+        Fluxo de Etapas
+      </button>
+      <button
+        type="button"
+        (click)="setTab('informacoes')"
+        [class]="currentTab === 'informacoes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
+      >
+        Informações
+      </button>
+    </div>
+
+    <div class="mt-8">
+      <form [formGroup]="formAtividade" class="space-y-8">
+        <section *ngIf="currentTab === 'detalhes'">
+          <div class="grid gap-6 md:grid-cols-3">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700">Id</label>
+              <input
+                type="text"
+                formControlName="id"
+                [disabled]="true"
+                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700">Versão</label>
+              <input
+                type="number"
+                formControlName="versao"
+                [disabled]="true"
+                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none"
+              />
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700">Identificação</label>
+              <input
+                type="text"
+                formControlName="tipo"
+                placeholder="Nome da atividade"
+                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              />
+              <p *ngIf="controle['tipo'].invalid && controle['tipo'].touched" class="text-sm text-red-600">Informe o nome da atividade.</p>
+            </div>
+          </div>
+        </section>
+
+        <section *ngIf="currentTab === 'fluxo'">
+          <div class="grid gap-6 md:grid-cols-[1fr_auto] items-end">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700">Etapa</label>
+              <select
+                name="etapaSelecionada"
+                [(ngModel)]="etapaSelecionada"
+                [ngModelOptions]="{ standalone: true }"
+                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="" disabled>Selecione uma etapa</option>
+                <option *ngFor="let etapa of etapaOptions" [value]="etapa">{{ etapa }}</option>
+              </select>
+            </div>
+            <button
+              type="button"
+              (click)="adicionarEtapa()"
+              class="inline-flex h-12 items-center justify-center rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700"
+            >
+              Add
+            </button>
+          </div>
+
+          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-4 text-sm font-semibold text-slate-700">Fluxo atual</div>
+            <ul class="space-y-3">
+              <li *ngFor="let etapa of fluxoEtapas; let i = index" class="flex items-center justify-between rounded-2xl bg-white border border-slate-200 px-4 py-3">
+                <span>{{ i + 1 }}. {{ etapa }}</span>
+                <button type="button" (click)="removerEtapa(i)" class="text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
+              </li>
+            </ul>
+            <p *ngIf="fluxoEtapas.length === 0" class="text-sm text-slate-500">Nenhuma etapa adicionada ainda.</p>
+          </div>
+        </section>
+
+        <section *ngIf="currentTab === 'informacoes'">
+          <div class="grid gap-6 md:grid-cols-2">
+            <div>
+              <label class="block text-sm font-semibold text-slate-700">Etapa</label>
+              <select
+                name="etapaInfoSelecionada"
+                [(ngModel)]="etapaInfoSelecionada"
+                [ngModelOptions]="{ standalone: true }"
+                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="" disabled>Selecione a etapa</option>
+                <option *ngFor="let etapa of etapaOptions" [value]="etapa">{{ etapa }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-sm font-semibold text-slate-700">Informação</label>
+              <select
+                name="informacaoSelecionada"
+                [(ngModel)]="informacaoSelecionada"
+                [ngModelOptions]="{ standalone: true }"
+                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+              >
+                <option value="" disabled>Selecione a informação</option>
+                <option *ngFor="let info of informacaoOptions" [value]="info">{{ info }}</option>
+              </select>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            (click)="adicionarInformacao()"
+            class="mt-6 inline-flex h-12 items-center justify-center rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            Add
+          </button>
+
+          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mb-4 text-sm font-semibold text-slate-700">Informações configuradas</div>
+            <ul class="space-y-3">
+              <li *ngFor="let info of informacoes; let i = index" class="flex items-center justify-between rounded-2xl bg-white border border-slate-200 px-4 py-3">
+                <span>{{ i + 1 }}. {{ info.informacao }} em {{ info.etapa }}</span>
+                <button type="button" (click)="removerInformacao(i)" class="text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
+              </li>
+            </ul>
+            <p *ngIf="informacoes.length === 0" class="text-sm text-slate-500">Nenhuma informação cadastrada ainda.</p>
+          </div>
+        </section>
+
+        <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+          <button
+            type="button"
+            (click)="cancelar()"
+            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+          >
+            Cancelar
+          </button>
+          <button
+            type="button"
+            (click)="salvar()"
+            class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+          >
+            Salvar Tipo de Atividade
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

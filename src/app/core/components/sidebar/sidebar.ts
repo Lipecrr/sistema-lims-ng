@@ -25,6 +25,7 @@ export class Sidebar {
     { label: 'Clientes', route: '/clientes' },
     { label: 'Metodologias', route: '/metodologias' },
     { label: 'Tipos de Amostras', route: '/tipos-amostras' },
+    { label: 'Tipos de Atividade', route: '/tipos-atividades' },
   ];
 
   user = {

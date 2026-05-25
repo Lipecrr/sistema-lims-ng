@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
-import { TiposAmostrasService } from '../services/tipos-amostras.service';
+import { TiposAmostrasService } from '@/services/tipos-amostras.service';
 
 @Component({
   selector: 'app-tipo-amostra-cadastro',

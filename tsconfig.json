@@ -52,7 +52,7 @@
         "importHelpers": true,
         "target": "ES2022",
         "module": "ES2022",
-        "rootDir": "./src",
+        "rootDir": "./",
         "baseUrl": "./",
         "ignoreDeprecations": "5.0",
         "paths": {

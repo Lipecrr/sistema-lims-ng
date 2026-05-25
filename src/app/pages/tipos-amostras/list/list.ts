@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { ResgistroStatusTag } from '@/core/components/registro-status-tag/registro-status-tag';
 import { TipoAmostraResponseModel } from '@/models/tipo-amostra.model';
-import { TiposAmostrasService } from '../services/tipos-amostras.service';
+import { TiposAmostrasService } from '@/services/tipos-amostras.service';
 
 @Component({
   selector: 'app-list',
