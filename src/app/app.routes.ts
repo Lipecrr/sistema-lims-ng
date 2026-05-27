@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 
 export const routes: Routes = [
+    { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+    { path: 'dashboard', loadComponent: () => import('./pages/dashboard/dashboard.js').then((m) => m.Dashboard) },
     { path: 'colaboradores', loadComponent: () => import('./pages/colaboradores/list/list.js').then((m) => m.List) },
     { path: 'colaboradores/novo', loadComponent: () => import('./pages/colaboradores/create/colaborador-cadastro.js').then((m) => m.ColaboradorCadastro) },
     { path: 'clientes', loadComponent: () => import('./pages/clientes/list/list.js').then((m) => m.List) },

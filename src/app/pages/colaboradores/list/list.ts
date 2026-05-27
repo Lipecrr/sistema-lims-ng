@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
-import { LucideAngularModule } from 'lucide-angular';
 import { ColaboradorResponseModel } from '@/models/colaborador.model';
 
 interface ColaboradorFilter {
@@ -24,7 +23,7 @@ interface PaginatedResult {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, LucideAngularModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule],
   templateUrl: './list.html',
 })
 export class List {

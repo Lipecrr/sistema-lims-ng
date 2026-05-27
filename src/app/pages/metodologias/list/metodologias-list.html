@@ -8,7 +8,7 @@
         <p class="max-w-2xl text-sm leading-6 text-slate-600">Visualize e filtre metodologias, normas de referência e criticidade de forma alinhada ao design LIMS Enterprise Core.</p>
       </div>
       <a routerLink="/metodologias/novo" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#1e40af] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1c3aa3]">
-        <lucide-angular name="plus" class="h-4 w-4" />
+        <i class="pi pi-plus"></i>
         Nova Metodologia
       </a>
     </section>
@@ -35,7 +35,7 @@
         </div>
         <div class="flex items-end justify-end gap-3">
           <button type="button" (click)="limparFiltros()" class="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50">
-            <lucide-angular name="filter" class="h-4 w-4" />
+            <i class="pi pi-filter mr-2"></i>
             Limpar
           </button>
           <button type="button" (click)="filtrar()" class="inline-flex h-12 items-center justify-center rounded-2xl bg-[#1e40af] px-5 text-sm font-semibold text-white transition hover:bg-[#1c3aa3]">
@@ -74,13 +74,13 @@
               <td class="px-5 py-4">
                 <div class="flex justify-end gap-2 text-slate-500">
                   <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
-                    <lucide-angular name="eye" class="h-4 w-4" />
+                    <i class="pi pi-eye"></i>
                   </button>
                   <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
-                    <lucide-angular name="edit-3" class="h-4 w-4" />
+                    <i class="pi pi-pencil"></i>
                   </button>
                   <button type="button" (click)="removerMetodologia(metodologia.id)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-red-600 transition hover:bg-red-50" aria-label="Excluir">
-                    <lucide-angular name="trash-2" class="h-4 w-4" />
+                    <i class="pi pi-trash"></i>
                   </button>
                 </div>
               </td>
@@ -99,7 +99,7 @@
           </div>
           <div class="flex items-center justify-end gap-2">
             <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50" (click)="setPage(page.page - 1)" [disabled]="page.page === 1">
-              <lucide-angular name="chevron-left" class="h-4 w-4" />
+              <i class="pi pi-chevron-left"></i>
             </button>
             <ng-container *ngFor="let pageNumber of pageNumbers(page.pageCount)">
               <button type="button" (click)="setPage(pageNumber)" [class]="page.page === pageNumber ? 'inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-2xl bg-[#1e40af] px-3 text-sm font-semibold text-white transition' : 'inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50'">
@@ -107,7 +107,7 @@
               </button>
             </ng-container>
             <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50" (click)="setPage(page.page + 1)" [disabled]="page.page === page.pageCount">
-              <lucide-angular name="chevron-right" class="h-4 w-4" />
+              <i class="pi pi-chevron-right"></i>
             </button>
           </div>
         </div>
@@ -122,7 +122,7 @@
             <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.aguardandoRevisao }}</p>
           </div>
           <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#1e40af]">
-            <lucide-angular name="hourglass" class="h-6 w-6" />
+            <i class="pi pi-clock text-2xl"></i>
           </div>
         </div>
       </div>
@@ -133,7 +133,7 @@
             <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.conformidadeTecnica }}</p>
           </div>
           <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-emerald-700">
-            <lucide-angular name="shield" class="h-6 w-6" />
+            <i class="pi pi-shield text-2xl"></i>
           </div>
         </div>
       </div>
@@ -144,7 +144,7 @@
             <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.metodosObsoletos }}</p>
           </div>
           <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-amber-700">
-            <lucide-angular name="alert-triangle" class="h-6 w-6" />
+            <i class="pi pi-exclamation-triangle text-2xl"></i>
           </div>
         </div>
       </div>
