@@ -1,19 +1,45 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
+
+type TipoPessoa = 'PJ' | 'PF';
+type AbaAtiva = 'informacoes' | 'endereco';
+type TipoContato = 'telefone' | 'email';
+type SetorContato = 'compras' | 'financeiro' | 'tecnico';
+
+interface Contato {
+  tipo: TipoContato;
+  setor: SetorContato;
+  valor: string;
+}
 
 @Component({
   selector: 'app-cliente-cadastro',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, RouterModule],
+  imports: [CommonModule, ReactiveFormsModule, FormsModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './cliente-cadastro.html',
 })
 export class ClienteCadastro implements OnInit {
-  private fb = inject(FormBuilder);
-  private router = inject(Router);
-
   clienteForm!: FormGroup;
+  tipoPessoa: TipoPessoa = 'PJ';
+  abaAtiva: AbaAtiva = 'informacoes';
+
+  // Contatos dinâmicos
+  contatos: Contato[] = [];
+  novoContatoTipo: TipoContato = 'telefone';
+  novoContatoSetor: SetorContato = 'compras';
+  novoContatoValor: string = '';
+
+  setores = [
+    { label: 'Compras', value: 'compras' },
+    { label: 'Financeiro', value: 'financeiro' },
+    { label: 'Técnico', value: 'tecnico' },
+  ];
 
   segmentos = [
     { label: 'Farmacêutico', value: 'farmaceutico' },
@@ -24,70 +50,192 @@ export class ClienteCadastro implements OnInit {
   ];
 
   estados = [
-    { label: 'SP', value: 'SP' },
-    { label: 'RJ', value: 'RJ' },
-    { label: 'MG', value: 'MG' },
+    { label: 'AC', value: 'AC' },
+    { label: 'AL', value: 'AL' },
+    { label: 'AP', value: 'AP' },
+    { label: 'AM', value: 'AM' },
     { label: 'BA', value: 'BA' },
+    { label: 'CE', value: 'CE' },
+    { label: 'DF', value: 'DF' },
+    { label: 'ES', value: 'ES' },
+    { label: 'GO', value: 'GO' },
+    { label: 'MA', value: 'MA' },
+    { label: 'MT', value: 'MT' },
+    { label: 'MS', value: 'MS' },
+    { label: 'MG', value: 'MG' },
+    { label: 'PA', value: 'PA' },
+    { label: 'PB', value: 'PB' },
     { label: 'PR', value: 'PR' },
+    { label: 'PE', value: 'PE' },
+    { label: 'PI', value: 'PI' },
+    { label: 'RJ', value: 'RJ' },
+    { label: 'RN', value: 'RN' },
     { label: 'RS', value: 'RS' },
-    { label: 'Outros', value: 'OUT' },
+    { label: 'RO', value: 'RO' },
+    { label: 'RR', value: 'RR' },
+    { label: 'SC', value: 'SC' },
+    { label: 'SP', value: 'SP' },
+    { label: 'SE', value: 'SE' },
+    { header: 'TO', value: 'TO' },
   ];
 
-  gerentes = [
-    { label: 'Ana Paula', value: 'ana-paula' },
-    { label: 'Carlos Eduardo', value: 'carlos-eduardo' },
-    { label: 'Mariana Costa', value: 'mariana-costa' },
-    { label: 'João Victor', value: 'joao-victor' },
-  ];
-
-  condicoesPagamento = [
-    { label: 'À vista', value: 'avista' },
-    { label: '30 dias', value: '30-dias' },
-    { label: '60 dias', value: '60-dias' },
-    { label: '90 dias', value: '90-dias' },
-  ];
+  constructor(
+    private fb: FormBuilder,
+    private router: Router,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService
+  ) {}
 
   ngOnInit() {
+    this.initForm();
+  }
+
+  initForm() {
     this.clienteForm = this.fb.group({
-      razaoSocial: ['', Validators.required],
-      nomeFantasia: ['', Validators.required],
-      cnpj: ['', [Validators.required, Validators.pattern('^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$')]],
-      inscricaoEstadual: ['', Validators.required],
-      segmento: ['', Validators.required],
-      cep: ['', [Validators.required, Validators.pattern('^\d{5}-\d{3}$')]],
-      logradouro: ['', Validators.required],
-      numero: ['', Validators.required],
-      cidade: ['', Validators.required],
-      estado: ['', Validators.required],
-      telefone: ['', [Validators.required, Validators.pattern('^\(\d{2}\) \d{4,5}-\d{4}$')]],
-      emailFaturamento: ['', [Validators.required, Validators.email]],
-      gerenteConta: ['', Validators.required],
-      condicaoPagamento: ['', Validators.required],
-      limiteCredito: ['', [Validators.required, Validators.pattern('^[0-9]+(\,[0-9]{2})?$')]],
-      observacoes: [''],
+      // Dados comuns
+      tipoPessoa: [this.tipoPessoa],
+      
+      // Dados PJ
+      razaoSocial: [''],
+      nomeFantasia: [''],
+      cnpj: [''],
+      inscricaoEstadual: [''],
+      segmento: [''],
+      
+      // Dados PF
+      nomeCompleto: [''],
+      cpf: [''],
+      
+      // Endereço
+      cep: [''],
+      logradouro: [''],
+      numero: [''],
+      cidade: [''],
+      estado: [''],
+      
+      // Contato
+      telefone: [''],
+      emailFaturamento: [''],
+    });
+
+    this.updateValidators();
+  }
+
+  updateValidators() {
+    const razaoSocial = this.clienteForm.get('razaoSocial');
+    const nomeFantasia = this.clienteForm.get('nomeFantasia');
+    const cnpj = this.clienteForm.get('cnpj');
+    const inscricaoEstadual = this.clienteForm.get('inscricaoEstadual');
+    const segmento = this.clienteForm.get('segmento');
+    const nomeCompleto = this.clienteForm.get('nomeCompleto');
+    const cpf = this.clienteForm.get('cpf');
+    const cep = this.clienteForm.get('cep');
+    const logradouro = this.clienteForm.get('logradouro');
+    const numero = this.clienteForm.get('numero');
+    const cidade = this.clienteForm.get('cidade');
+    const estado = this.clienteForm.get('estado');
+    const telefone = this.clienteForm.get('telefone');
+    const emailFaturamento = this.clienteForm.get('emailFaturamento');
+
+    if (this.tipoPessoa === 'PJ') {
+      razaoSocial?.setValidators([Validators.required]);
+      nomeFantasia?.setValidators([Validators.required]);
+      cnpj?.setValidators([Validators.required]);
+      inscricaoEstadual?.setValidators([Validators.required]);
+      segmento?.setValidators([Validators.required]);
+      nomeCompleto?.clearValidators();
+      cpf?.clearValidators();
+    } else {
+      razaoSocial?.clearValidators();
+      nomeFantasia?.clearValidators();
+      cnpj?.clearValidators();
+      inscricaoEstadual?.clearValidators();
+      segmento?.clearValidators();
+      nomeCompleto?.setValidators([Validators.required]);
+      cpf?.setValidators([Validators.required]);
+    }
+
+    // Validadores comuns
+    cep?.setValidators([Validators.required]);
+    logradouro?.setValidators([Validators.required]);
+    numero?.setValidators([Validators.required]);
+    cidade?.setValidators([Validators.required]);
+    estado?.setValidators([Validators.required]);
+    telefone?.setValidators([Validators.required]);
+    emailFaturamento?.setValidators([Validators.required, Validators.email]);
+
+    // Atualizar validações
+    razaoSocial?.updateValueAndValidity();
+    nomeFantasia?.updateValueAndValidity();
+    cnpj?.updateValueAndValidity();
+    inscricaoEstadual?.updateValueAndValidity();
+    segmento?.updateValueAndValidity();
+    nomeCompleto?.updateValueAndValidity();
+    cpf?.updateValueAndValidity();
+    cep?.updateValueAndValidity();
+    logradouro?.updateValueAndValidity();
+    numero?.updateValueAndValidity();
+    cidade?.updateValueAndValidity();
+    estado?.updateValueAndValidity();
+    telefone?.updateValueAndValidity();
+    emailFaturamento?.updateValueAndValidity();
+  }
+
+  trocarTipoPessoa(tipo: TipoPessoa) {
+    this.tipoPessoa = tipo;
+    this.clienteForm.patchValue({ tipoPessoa: tipo });
+    this.updateValidators();
+    this.clienteForm.reset({
+      tipoPessoa: tipo,
     });
   }
 
-  get controle() {
-    return this.clienteForm.controls;
+  trocarAba(aba: AbaAtiva) {
+    this.abaAtiva = aba;
   }
 
-  cancelar() {
-    this.router.navigate(['/clientes']);
-  }
-
-  limparFormulario() {
-    this.clienteForm.reset();
-  }
-
-  async finalizarCadastro() {
-    if (this.clienteForm.invalid) {
-      this.clienteForm.markAllAsTouched();
+  adicionarContato() {
+    if (!this.novoContatoValor.trim()) {
+      this.messageService.add({
+        severity: 'warn',
+        summary: 'Atenção',
+        detail: 'Por favor, preencha o valor do contato.',
+      });
       return;
     }
 
-    alert('Cliente cadastrado com sucesso.');
-    this.router.navigate(['/clientes']);
+    this.contatos.push({
+      tipo: this.novoContatoTipo,
+      setor: this.novoContatoSetor,
+      valor: this.novoContatoValor.trim(),
+    });
+
+    // Limpar campos
+    this.novoContatoValor = '';
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Contato adicionado com sucesso!',
+    });
+  }
+
+  removerContato(index: number) {
+    this.confirmationService.confirm({
+      message: 'Deseja realmente remover este contato?',
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, remover',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.contatos.splice(index, 1);
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Contato removido com sucesso!',
+        });
+      },
+    });
   }
 
   formatCnpj(event: Event) {
@@ -99,7 +247,16 @@ export class ClienteCadastro implements OnInit {
       .replace(/^(\d{2}\.\d{3}\.\d{3})(\d)/, '$1/$2')
       .replace(/^(\d{2}\.\d{3}\.\d{3}\/\d{4})(\d)/, '$1-$2')
       .slice(0, 18);
-    this.clienteForm.get('cnpj')?.setValue(input.value, { emitEvent: false });
+  }
+
+  formatCpf(event: Event) {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value
+      .replace(/\D/g, '')
+      .replace(/^(\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{3}\.\d{3})(\d)/, '$1.$2')
+      .replace(/^(\d{3}\.\d{3}\.\d{3})(\d)/, '$1-$2')
+      .slice(0, 14);
   }
 
   formatCep(event: Event) {
@@ -108,17 +265,67 @@ export class ClienteCadastro implements OnInit {
       .replace(/\D/g, '')
       .replace(/^(\d{5})(\d)/, '$1-$2')
       .slice(0, 9);
-    this.clienteForm.get('cep')?.setValue(input.value, { emitEvent: false });
   }
 
   formatTelefone(event: Event) {
     const input = event.target as HTMLInputElement;
-    const digits = input.value.replace(/\D/g, '');
-    const formatted = digits
+    input.value = input.value
+      .replace(/\D/g, '')
       .replace(/^(\d{2})(\d)/, '($1) $2')
-      .replace(/^(\(\d{2}\) \d{4,5})(\d)/, '$1-$2')
+      .replace(/(\d{4,5})(\d{4})$/, '$1-$2')
       .slice(0, 15);
-    input.value = formatted;
-    this.clienteForm.get('telefone')?.setValue(input.value, { emitEvent: false });
+  }
+
+  formatNovoContatoTelefone(event: Event) {
+    const input = event.target as HTMLInputElement;
+    input.value = input.value
+      .replace(/\D/g, '')
+      .replace(/^(\d{2})(\d)/, '($1) $2')
+      .replace(/(\d{4,5})(\d{4})$/, '$1-$2')
+      .slice(0, 15);
+  }
+
+  getSetorLabel(setor: SetorContato): string {
+    const labels: Record<SetorContato, string> = {
+      compras: 'Compras',
+      financeiro: 'Financeiro',
+      tecnico: 'Técnico',
+    };
+    return labels[setor];
+  }
+
+  descartar() {
+    this.confirmationService.confirm({
+      message: 'Deseja realmente descartar o cadastro? Todos os dados serão perdidos.',
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: 'Sim, descartar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        this.router.navigate(['/clientes']);
+      },
+    });
+  }
+
+  salvar() {
+    if (this.clienteForm.invalid) {
+      this.clienteForm.markAllAsTouched();
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Por favor, preencha todos os campos obrigatórios.',
+      });
+      return;
+    }
+
+    this.messageService.add({
+      severity: 'success',
+      summary: 'Sucesso',
+      detail: 'Cliente cadastrado com sucesso!',
+    });
+
+    setTimeout(() => {
+      this.router.navigate(['/clientes']);
+    }, 1500);
   }
 }
