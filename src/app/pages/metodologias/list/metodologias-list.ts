@@ -95,10 +95,16 @@ export class MetodologiasList {
   );
 
   setores = [
-    { label: 'Química', value: 'Química' },
+    { label: 'Campo - Coleta', value: 'Campo - Coleta' },
+    { label: 'Ecotoxicológico', value: 'Ecotoxicológico' },
+    { label: 'Fisico-Quimico', value: 'Fisico-Quimico' },
+    { label: 'GC - Cromatografia Gasosa', value: 'GC - Cromatografia Gasosa' },
+    { label: 'HLPC', value: 'HLPC' },
+    { label: 'IC - Cromatografia Iônica', value: 'IC - Cromatografia Iônica' },
     { label: 'Microbiologia', value: 'Microbiologia' },
-    { label: 'Ambiental', value: 'Ambiental' },
-    { label: 'Controle de Qualidade', value: 'Controle de Qualidade' },
+    { label: 'Parasitologia', value: 'Parasitologia' },
+    { label: 'Subcontratado', value: 'Subcontratado' },
+    { label: 'Virologia', value: 'Virologia' },
   ];
 
   criticidades = [

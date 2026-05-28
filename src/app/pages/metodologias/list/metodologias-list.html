@@ -54,7 +54,7 @@
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Nome da Metodologia</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Norma de Referência</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Setor</th>
-              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Tempo Est.</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Prazo de Conclusão</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Criticidade</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
             </tr>
@@ -65,7 +65,7 @@
               <td class="px-5 py-4">{{ metodologia.nome }}</td>
               <td class="px-5 py-4 text-slate-600">{{ metodologia.norma }}</td>
               <td class="px-5 py-4 text-slate-700">{{ metodologia.setor }}</td>
-              <td class="px-5 py-4 text-slate-700">{{ metodologia.tempoEstimadoMinutos | tempoEstimado }}</td>
+              <td class="px-5 py-4 text-slate-700">{{ metodologia.prazoConclusaoDias | tempoEstimado }}</td>
               <td class="px-5 py-4">
                 <span [ngClass]="badgeClass(metodologia.criticidade)" class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold ring-1">
                   {{ badgeLabel(metodologia.criticidade) }}

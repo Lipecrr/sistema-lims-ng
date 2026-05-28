@@ -41,6 +41,14 @@
           <span>🔧</span> Equipamentos & Reagentes
         </span>
       </button>
+      <button type="button" (click)="trocarAba('embalagens')"
+        [class]="abaAtiva === 'embalagens'
+          ? 'px-6 py-4 text-sm font-semibold text-[#1e40af] border-b-2 border-[#1e40af]'
+          : 'px-6 py-4 text-sm font-semibold text-slate-600 transition hover:text-slate-900'">
+        <span class="inline-flex items-center gap-2">
+          <span>📦</span> Frascos e Embalagens ({{ embalagens.length }})
+        </span>
+      </button>
       <button type="button" (click)="trocarAba('analises')"
         [class]="abaAtiva === 'analises'
           ? 'px-6 py-4 text-sm font-semibold text-[#1e40af] border-b-2 border-[#1e40af]'
@@ -81,8 +89,8 @@
 
             <div class="grid gap-4 sm:grid-cols-3">
               <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Tempo (min)
-                <input type="number" formControlName="tempo" min="0"
+                Prazo de Conclusão (dias)
+                <input type="number" formControlName="prazoConclusao" min="0"
                   class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
               </label>
               <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
@@ -221,6 +229,100 @@
                       <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
                     </button>
                   </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ABA: FRASCOS E EMBALAGENS -->
+        <section *ngIf="abaAtiva === 'embalagens'" class="rounded-b-[1rem] rounded-tr-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+          <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
+            <div>
+              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Embalagens e Preservantes</p>
+              <h2 class="text-xl font-bold text-[#1a1a1a]">Frascos e Embalagens</h2>
+            </div>
+            <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+              <span class="inline-flex h-4 w-4 items-center justify-center">📦</span> Total: {{ embalagens.length }}
+            </div>
+          </div>
+
+          <div class="space-y-6 pt-6">
+            <!-- Formulário de adição -->
+            <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+              <div class="grid gap-4 sm:grid-cols-2">
+                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                  Tipo de Embalagem
+                  <select [(ngModel)]="embalagemTipo"
+                    class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                    <option value="">Selecione</option>
+                    <option *ngFor="let tipo of tiposEmbalagem" [value]="tipo.value">{{ tipo.label }}</option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                  Tipo de Amostra
+                  <select [(ngModel)]="embalagemTipoAmostra" (change)="atualizarUnidadeEmbalagem()"
+                    class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                    <option *ngFor="let tipo of tiposAmostra" [value]="tipo.value">
+                      {{ tipo.label }}
+                    </option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                  Quantidade
+                  <input type="number" min="1" [(ngModel)]="embalagemQuantidade"
+                    class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                </label>
+                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+                  Unidade de Medida
+                  <select [(ngModel)]="embalagemUnidade"
+                    class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                    <option *ngFor="let unidade of getUnidadesPorTipo(embalagemTipoAmostra)" 
+                      [value]="unidade.value">
+                      {{ unidade.label }}
+                    </option>
+                  </select>
+                </label>
+                <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700 sm:col-span-2">
+                  Preservante
+                  <input type="text" [(ngModel)]="embalagemPreservante"
+                    class="rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                </label>
+              </div>
+              <div class="flex items-center gap-3 mt-4">
+                <button type="button" (click)="adicionarEmbalagem()"
+                  class="inline-flex items-center gap-2 rounded-xl border border-[#1e40af] bg-[#1e40af] px-4 py-2 text-sm font-semibold text-white transition hover:bg-blue-900">
+                  <span class="inline-flex h-4 w-4 items-center justify-center">+</span>
+                  Adicionar Embalagem
+                </button>
+              </div>
+            </div>
+
+            <!-- Lista de embalagens adicionadas -->
+            <div class="space-y-3" *ngIf="embalagens.length > 0">
+              <h3 class="text-sm font-semibold text-slate-800">Embalagens Adicionadas</h3>
+              <div *ngFor="let embalagem of embalagens; let i = index"
+                class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+                <div class="grid gap-4 sm:grid-cols-[1fr_1fr_0.5fr_1fr_1fr_auto]">
+                  <div class="flex items-center">
+                    <p class="text-sm text-slate-900"><span class="font-semibold">{{ embalagem.tipoEmbalagem }}</span></p>
+                  </div>
+                  <div class="flex items-center">
+                    <p class="text-sm text-slate-600">Tipo Amostra: <span class="font-semibold">{{ getTipoAmostraLabel(embalagem.tipoAmostra) }}</span></p>
+                  </div>
+                  <div class="flex items-center">
+                    <p class="text-sm text-slate-600">Qtd: <span class="font-semibold">{{ embalagem.quantidade }}</span></p>
+                  </div>
+                  <div class="flex items-center">
+                    <p class="text-sm text-slate-600">Uni: <span class="font-semibold">{{ embalagem.unidadeMedida }}</span></p>
+                  </div>
+                  <div class="flex items-center">
+                    <p class="text-sm text-slate-600">Preserv: <span class="font-semibold">{{ embalagem.preservante || '-' }}</span></p>
+                  </div>
+                  <button type="button" (click)="removerEmbalagem(i)"
+                    class="inline-flex h-12 items-center justify-center rounded-2xl border border-transparent bg-red-50 px-3 text-red-700 transition hover:bg-red-100">
+                    <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
+                  </button>
                 </div>
               </div>
             </div>

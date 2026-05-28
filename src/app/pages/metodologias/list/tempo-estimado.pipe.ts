@@ -10,15 +10,9 @@ export class TempoEstimadoPipe implements PipeTransform {
       return '—';
     }
 
-    const hours = Math.floor(value / 60);
-    const minutes = value % 60;
-
-    if (hours > 0 && minutes > 0) {
-      return `${hours}h ${minutes}m`;
+    if (value === 1) {
+      return `${value} dia`;
     }
-    if (hours > 0) {
-      return `${hours}h`;
-    }
-    return `${minutes} min`;
+    return `${value} dias`;
   }
 }

@@ -12,20 +12,22 @@ export class MetodologiasListService {
       codigo: 'MT-001',
       nome: 'Extração de Nitrogênio Kjeldahl',
       norma: 'NBR 12810',
-      setor: 'Química',
-      tempoEstimadoMinutos: 180,
+      setor: 'Fisico-Quimico',
+      prazoConclusaoDias: 3,
       criticidade: 'alta',
       obsoleto: false,
+      embalagens: []
     },
     {
       id: '2',
       codigo: 'MT-002',
       nome: 'Análise de DBO em Efluentes',
       norma: 'NBR 18920',
-      setor: 'Ambiental',
-      tempoEstimadoMinutos: 135,
+      setor: 'Microbiologia',
+      prazoConclusaoDias: 5,
       criticidade: 'media',
       obsoleto: false,
+      embalagens: []
     },
   ];
 

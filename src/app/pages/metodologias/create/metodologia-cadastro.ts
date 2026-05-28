@@ -18,6 +18,14 @@ interface Reagente {
   quantidade: number;
 }
 
+interface Embalagem {
+  tipoEmbalagem: string;
+  tipoAmostra: string;
+  quantidade: number;
+  unidadeMedida: string;
+  preservante: string;
+}
+
 @Component({
   selector: 'app-metodologia-cadastro',
   standalone: true,
@@ -27,12 +35,13 @@ interface Reagente {
 })
 export class MetodologiaCadastro implements OnInit {
   formMetodologia!: FormGroup;
-  abaAtiva = 'dados'; // 'dados', 'recursos', 'analises'
+  abaAtiva = 'dados'; // 'dados', 'recursos', 'analises', 'embalagens'
 
-  // Arrays para Equipamentos, Reagentes e Análises
+  // Arrays para Equipamentos, Reagentes, Análises e Embalagens
   equipamentos: Equipamento[] = [];
   reagentes: Reagente[] = [];
   analises: AnaliseModel[] = [];
+  embalagens: Embalagem[] = [];
 
   // Campos temporários para adicionar
   equipamentoNome = '';
@@ -48,6 +57,25 @@ export class MetodologiaCadastro implements OnInit {
   analiseLQ: number | null = null;
   analiseLD: number | null = null;
   analiseEditIndex: number | null = null;
+
+  embalagemTipo = '';
+  embalagemTipoAmostra: TipoAmostra = 'agua';
+  embalagemQuantidade: number | null = null;
+  embalagemUnidade: UnidadeMedida = 'mg/L';
+  embalagemPreservante = '';
+
+  tiposEmbalagem = [
+    { label: 'Estéril', value: 'Estéril' },
+    { label: 'Pote Boca Larga', value: 'Pote Boca Larga' },
+    { label: 'Plástico', value: 'Plástico' },
+    { label: 'Saco Estéil', value: 'Saco Estéil' },
+    { label: 'SWAB', value: 'SWAB' },
+    { label: 'Vidro', value: 'Vidro' },
+    { label: 'Vidro Âmbar', value: 'Vidro Âmbar' },
+    { label: 'Vidro Boca Larga', value: 'Vidro Boca Larga' },
+    { label: 'Vial', value: 'Vial' },
+    { label: 'Vial Âmbar', value: 'Vial Âmbar' },
+  ];
 
   tiposAmostra: { label: string; value: TipoAmostra }[] = [
     { label: 'Água', value: 'agua' },
@@ -102,10 +130,16 @@ export class MetodologiaCadastro implements OnInit {
   ];
 
   setores = [
-    { label: 'Química', value: 'quimica' },
-    { label: 'Microbiologia', value: 'microbiologia' },
-    { label: 'Ambiental', value: 'ambiental' },
-    { label: 'Controle de Qualidade', value: 'qualidade' }
+    { label: 'Campo - Coleta', value: 'Campo - Coleta' },
+    { label: 'Ecotoxicológico', value: 'Ecotoxicológico' },
+    { label: 'Fisico-Quimico', value: 'Fisico-Quimico' },
+    { label: 'GC - Cromatografia Gasosa', value: 'GC - Cromatografia Gasosa' },
+    { label: 'HLPC', value: 'HLPC' },
+    { label: 'IC - Cromatografia Iônica', value: 'IC - Cromatografia Iônica' },
+    { label: 'Microbiologia', value: 'Microbiologia' },
+    { label: 'Parasitologia', value: 'Parasitologia' },
+    { label: 'Subcontratado', value: 'Subcontratado' },
+    { label: 'Virologia', value: 'Virologia' }
   ];
 
   criticidades = [
@@ -120,10 +154,41 @@ export class MetodologiaCadastro implements OnInit {
     this.formMetodologia = this.fb.group({
       nome: ['', Validators.required],
       norma: ['', Validators.required],
-      tempo: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
+      prazoConclusao: ['', [Validators.required, Validators.pattern('^[0-9]+$')]],
       setor: ['', Validators.required],
       criticidade: ['media', Validators.required]
     });
+  }
+
+  // EMBALAGENS
+  atualizarUnidadeEmbalagem() {
+    const unidades = this.getUnidadesPorTipo(this.embalagemTipoAmostra);
+    if (unidades.length > 0 && !unidades.find(u => u.value === this.embalagemUnidade)) {
+      this.embalagemUnidade = unidades[0].value;
+    }
+  }
+
+  adicionarEmbalagem() {
+    if (!this.embalagemTipo || !this.embalagemQuantidade || !this.embalagemUnidade) {
+      alert('Preencha o Tipo de Embalagem, Quantidade e Unidade de Medida');
+      return;
+    }
+    this.embalagens = [...this.embalagens, {
+      tipoEmbalagem: this.embalagemTipo,
+      tipoAmostra: this.embalagemTipoAmostra,
+      quantidade: this.embalagemQuantidade,
+      unidadeMedida: this.embalagemUnidade,
+      preservante: this.embalagemPreservante
+    }];
+    this.embalagemTipo = '';
+    this.embalagemTipoAmostra = 'agua';
+    this.embalagemQuantidade = null;
+    this.embalagemUnidade = 'mg/L';
+    this.embalagemPreservante = '';
+  }
+
+  removerEmbalagem(index: number) {
+    this.embalagens = this.embalagens.filter((_, i) => i !== index);
   }
 
   // EQUIPAMENTOS
@@ -161,7 +226,7 @@ export class MetodologiaCadastro implements OnInit {
     return this.unidadesPorTipo[tipoAmostra] || [];
   }
 
-  getTipoAmostraLabel(tipoAmostra: TipoAmostra): string {
+  getTipoAmostraLabel(tipoAmostra: string): string {
     return this.tiposAmostra.find(tipo => tipo.value === tipoAmostra)?.label || 'Desconhecido';
   }
 
@@ -245,7 +310,8 @@ export class MetodologiaCadastro implements OnInit {
       ...this.formMetodologia.value,
       equipamentos: this.equipamentos,
       reagentes: this.reagentes,
-      analises: this.analises
+      analises: this.analises,
+      embalagens: this.embalagens
     };
 
     try {
@@ -272,7 +338,7 @@ export class MetodologiaCadastro implements OnInit {
         this.formMetodologia.reset({
           nome: '',
           norma: '',
-          tempo: '',
+          prazoConclusao: '',
           setor: '',
           criticidade: 'media'
         });
@@ -293,6 +359,13 @@ export class MetodologiaCadastro implements OnInit {
         this.analiseLQ = null;
         this.analiseLD = null;
         this.analiseEditIndex = null;
+
+        this.embalagens = [];
+        this.embalagemTipo = '';
+        this.embalagemTipoAmostra = 'agua';
+        this.embalagemQuantidade = null;
+        this.embalagemUnidade = 'mg/L';
+        this.embalagemPreservante = '';
 
         this.messageService.add({ severity: 'info', summary: 'Descartado', detail: 'Metodologia descartada com sucesso.' });
         

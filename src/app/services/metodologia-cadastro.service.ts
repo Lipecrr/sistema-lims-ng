@@ -13,10 +13,11 @@ export class MetodologiaCadastroService {
       nome: data.nome,
       norma: data.norma,
       setor: data.setor,
-      tempoEstimadoMinutos: Number(data.tempo),
+      prazoConclusaoDias: Number(data.prazoConclusao),
       criticidade: data.criticidade,
       obsoleto: false,
-      analises: data.analises ?? []
+      analises: data.analises ?? [],
+      embalagens: data.embalagens ?? []
     };
 
     this.listService.addMetodologia(metodologia);
