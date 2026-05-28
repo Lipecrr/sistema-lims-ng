@@ -1,0 +1,147 @@
+<div class="min-h-screen bg-[#f7f9fb] px-4 py-6 sm:px-6 lg:px-8">
+  <div class="mx-auto max-w-7xl space-y-6">
+
+    <section class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+      <div class="space-y-2">
+        <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Gestão de Preços</p>
+        <h1 class="text-3xl font-semibold tracking-tight text-slate-950">Itens de Preço</h1>
+        <p class="max-w-2xl text-sm leading-6 text-slate-600">Gerencie itens de preço, incluindo despesas, produtos e serviços do laboratório.</p>
+      </div>
+      <button type="button" routerLink="/itens-preco/novo" class="inline-flex items-center justify-center gap-2 rounded-2xl bg-[#1e40af] px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#1c3aa3]">
+        <i class="pi pi-plus"></i>
+        Novo Item de Preço
+      </button>
+    </section>
+
+    <section class="rounded-[28px] border border-[#e5e7eb] bg-white px-6 py-6 shadow-sm">
+      <div [formGroup]="filtrosForm" class="grid gap-4 xl:grid-cols-[1.85fr_1fr_auto]">
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Buscar</label>
+          <input type="text" formControlName="search" placeholder="Identificação ou tipo" class="w-full rounded-[18px] border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1e40af] focus:ring-2 focus:ring-[#c7d2fe]" />
+        </div>
+        <div class="space-y-2">
+          <label class="block text-sm font-semibold text-slate-700">Tipo</label>
+          <select formControlName="tipo" class="w-full rounded-[18px] border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-[#1e40af] focus:ring-2 focus:ring-[#c7d2fe]">
+            <option *ngFor="let option of tipos" [value]="option.value">{{ option.label }}</option>
+          </select>
+        </div>
+        <div class="flex items-end justify-end gap-3">
+          <button type="button" (click)="limparFiltros()" class="inline-flex h-12 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50">
+            <i class="pi pi-replay mr-2"></i>
+            Limpar
+          </button>
+          <button type="button" (click)="filtrar()" class="inline-flex h-12 items-center justify-center rounded-2xl bg-[#1e40af] px-5 text-sm font-semibold text-white transition hover:bg-[#1c3aa3]">
+            Filtrar
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <section class="rounded-[28px] border border-[#e5e7eb] bg-white shadow-sm">
+      <ng-container *ngIf="pagedItensPreco$ | async as page">
+        <div class="overflow-x-auto">
+          <table class="min-w-full border-separate border-spacing-0 text-sm">
+            <thead class="bg-slate-50 text-slate-700">
+              <tr>
+                <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Identificação</th>
+                <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Preço</th>
+                <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Tipo</th>
+                <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
+              <tr *ngFor="let item of page.items" class="border-b border-slate-100 last:border-none">
+                <td class="px-5 py-4 font-medium text-slate-900">{{ item.identificacao }}</td>
+                <td class="px-5 py-4 text-slate-700">{{ formatarPreco(item.preco) }}</td>
+                <td class="px-5 py-4">
+                  <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold" [class]="getTipoBadgeClass(item.tipo)">
+                    {{ item.tipo }}
+                  </span>
+                </td>
+                <td class="px-5 py-4">
+                  <div class="flex justify-end gap-2 text-slate-500">
+                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
+                      <i class="pi pi-pencil"></i>
+                    </button>
+                    <button type="button" (click)="removerItemPreco(item.id)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-red-600 transition hover:bg-red-50" aria-label="Excluir">
+                      <i class="pi pi-trash"></i>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <tr *ngIf="page.items.length === 0">
+                <td colspan="4" class="px-5 py-10 text-center text-sm text-slate-500">Nenhum item de preço encontrado para os filtros aplicados.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex flex-col gap-3 border-t border-slate-200 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+          <div class="text-sm text-slate-600">
+            Mostrando <span class="font-semibold text-slate-900">{{ page.start }}</span>–<span class="font-semibold text-slate-900">{{ page.end }}</span> de <span class="font-semibold text-slate-900">{{ page.total }}</span>
+          </div>
+          <div class="flex items-center justify-end gap-2">
+            <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50" (click)="setPage(page.page - 1)" [disabled]="page.page === 1">
+              <i class="pi pi-chevron-left"></i>
+            </button>
+            <ng-container *ngFor="let pageNumber of pageNumbers(page.pageCount)">
+              <button type="button" (click)="setPage(pageNumber)" [class]="page.page === pageNumber ? 'inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-2xl bg-[#1e40af] px-3 text-sm font-semibold text-white transition' : 'inline-flex h-10 min-w-[2.5rem] items-center justify-center rounded-2xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50'">
+                {{ pageNumber }}
+              </button>
+            </ng-container>
+            <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 transition hover:bg-slate-50" (click)="setPage(page.page + 1)" [disabled]="page.page === page.pageCount">
+              <i class="pi pi-chevron-right"></i>
+            </button>
+          </div>
+        </div>
+      </ng-container>
+    </section>
+
+    <section class="grid gap-4 md:grid-cols-4">
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Total de Itens</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.total }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#1e40af]">
+            <i class="pi pi-tags text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Preço Médio</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ formatarPreco(resumo.mediaPreco) }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-emerald-700">
+            <i class="pi pi-chart-bar text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Despesas</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.totalDespesas }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-red-100 text-red-700">
+            <i class="pi pi-wallet text-2xl"></i>
+          </div>
+        </div>
+      </div>
+      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold text-slate-700">Produtos/Serviços</p>
+            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.totalProdutos + resumo.totalServicos }}</p>
+          </div>
+          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100 text-blue-700">
+            <i class="pi pi-shopping-bag text-2xl"></i>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

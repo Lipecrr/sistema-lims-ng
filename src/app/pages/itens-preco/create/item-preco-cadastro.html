@@ -1,0 +1,61 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="min-h-screen bg-[#f7f9fb] py-8 px-4 sm:px-6 lg:px-8">
+  <div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+      <div>
+        <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Cadastro</p>
+        <h1 class="text-3xl font-bold text-[#1a1a1a]">Novo Item de Preço</h1>
+        <p class="mt-1 text-sm text-slate-600">Cadastre um novo item de preço, incluindo identificação, preço e tipo.</p>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <button type="button" (click)="descartar()"
+          class="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300">
+          <span class="inline-flex h-4 w-4 items-center justify-center text-slate-600">×</span>
+          Descartar
+        </button>
+        <button type="button" (click)="salvar()"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
+          <span class="inline-flex h-4 w-4 items-center justify-center">💾</span>
+          Salvar
+        </button>
+      </div>
+    </div>
+
+    <form [formGroup]="itemPrecoForm" class="space-y-6">
+      <section class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="space-y-5">
+          <div class="grid gap-4 sm:grid-cols-1">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              <span>Identificação <span class="text-red-600">*</span></span>
+              <input type="text" formControlName="identificacao" placeholder="Ex: Reagente Químico A"
+                class="rounded-[18px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <p *ngIf="itemPrecoForm.get('identificacao')?.touched && itemPrecoForm.get('identificacao')?.invalid" class="text-xs text-red-500">Identificação é obrigatória</p>
+            </label>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              <span>Preço <span class="text-red-600">*</span></span>
+              <input type="text" [value]="precoDisplayValue" (input)="onPrecoInput($event)" placeholder="R$ 0,00"
+                class="rounded-[18px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <p *ngIf="itemPrecoForm.get('preco')?.touched && itemPrecoForm.get('preco')?.invalid" class="text-xs text-red-500">Preço é obrigatório e deve ser maior ou igual a 0</p>
+            </label>
+
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              <span>Tipo de Item de Preço <span class="text-red-600">*</span></span>
+              <select formControlName="tipo"
+                class="rounded-[18px] border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                <option value="">Selecione</option>
+                <option *ngFor="let tipo of tipos" [value]="tipo.value">{{ tipo.label }}</option>
+              </select>
+              <p *ngIf="itemPrecoForm.get('tipo')?.touched && itemPrecoForm.get('tipo')?.invalid" class="text-xs text-red-500">Tipo é obrigatório</p>
+            </label>
+          </div>
+        </div>
+      </section>
+    </form>
+  </div>
+</div>

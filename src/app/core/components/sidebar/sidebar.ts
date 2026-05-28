@@ -23,6 +23,7 @@ export class Sidebar {
   cadastro = [
     { label: 'Colaboradores', route: '/colaboradores' },
     { label: 'Clientes', route: '/clientes' },
+    { label: 'Itens de Preço', route: '/itens-preco' },
     { label: 'Metodologias', route: '/metodologias' },
     { label: 'Tipos de Amostras', route: '/tipos-amostras' },
     { label: 'Tipos de Atividade', route: '/tipos-atividades' },

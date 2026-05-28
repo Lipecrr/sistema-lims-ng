@@ -12,5 +12,7 @@ export const routes: Routes = [
     { path: 'tipos-amostras', loadComponent: () => import('./pages/tipos-amostras/list/list.js').then((m) => m.List) },
     { path: 'tipos-amostras/novo', loadComponent: () => import('./pages/tipos-amostras/create/tipo-amostra-cadastro.js').then((m) => m.TipoAmostraCadastro) },
     { path: 'tipos-atividades', loadComponent: () => import('./pages/tipos-atividades/list/list.js').then((m) => m.List) },
-    { path: 'tipos-atividades/novo', loadComponent: () => import('./pages/tipos-atividades/create/tipo-atividade-cadastro.js').then((m) => m.TipoAtividadeCadastro) }
+    { path: 'tipos-atividades/novo', loadComponent: () => import('./pages/tipos-atividades/create/tipo-atividade-cadastro.js').then((m) => m.TipoAtividadeCadastro) },
+    { path: 'itens-preco', loadComponent: () => import('./pages/itens-preco/list/list.js').then((m) => m.ItensPrecoList) },
+    { path: 'itens-preco/novo', loadComponent: () => import('./pages/itens-preco/create/item-preco-cadastro.js').then((m) => m.ItemPrecoCadastro) }
 ];
