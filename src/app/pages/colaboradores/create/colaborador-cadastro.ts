@@ -23,6 +23,8 @@ export class ColaboradorCadastro implements OnInit {
     { label: 'Administrador', value: 'administrador' },
   ];
   fotoNome = 'Nenhum arquivo selecionado';
+  fotoPreview: string | null = null;
+  isDragging = false;
 
   constructor(private fb: FormBuilder, private messageService: MessageService, private confirmationService: ConfirmationService) {}
 
@@ -102,7 +104,63 @@ export class ColaboradorCadastro implements OnInit {
   onFileChange(event: Event) {
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
-    this.fotoNome = file ? file.name : 'Nenhum arquivo selecionado';
+    this.processarArquivo(file);
+  }
+
+  onDragOver(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = true;
+  }
+
+  onDragLeave(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+  }
+
+  onDrop(event: DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
+    this.isDragging = false;
+    
+    const files = event.dataTransfer?.files;
+    if (files && files.length > 0) {
+      this.processarArquivo(files[0]);
+    }
+  }
+
+  processarArquivo(file: File | undefined) {
+    if (!file) {
+      this.fotoNome = 'Nenhum arquivo selecionado';
+      this.fotoPreview = null;
+      return;
+    }
+
+    // Validações
+    if (!file.type.startsWith('image/')) {
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Por favor, selecione apenas arquivos de imagem.' });
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'A imagem deve ter no máximo 5MB.' });
+      return;
+    }
+
+    this.fotoNome = file.name;
+
+    // Criar preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      this.fotoPreview = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removerFoto() {
+    this.fotoPreview = null;
+    this.fotoNome = 'Nenhum arquivo selecionado';
   }
 
   async salvar() {
@@ -131,6 +189,7 @@ export class ColaboradorCadastro implements OnInit {
       accept: () => {
         this.formColaborador.reset({ enviarEmail: true, forcarTrocaSenha: true });
         this.fotoNome = 'Nenhum arquivo selecionado';
+        this.fotoPreview = null;
         this.abaAtiva = 'informacoes';
         this.messageService.add({
           severity: 'info',

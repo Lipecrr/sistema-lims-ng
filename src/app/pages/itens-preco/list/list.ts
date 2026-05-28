@@ -4,7 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
 import { ItemPrecoResponseModel, TipoItemPreco } from '@/models/item-preco.model';
-import { ItensPrecoService } from '@/services/itens-preco.service';
+import { ItensPrecoService } from 'src/services/itens-preco.service';
 
 interface ItemPrecoFilter {
   search: string;

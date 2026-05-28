@@ -6,7 +6,7 @@ import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TipoItemPreco } from '@/models/item-preco.model';
-import { ItensPrecoService } from '@/services/itens-preco.service';
+import { ItensPrecoService } from 'src/services/itens-preco.service';
 
 @Component({
   selector: 'app-item-preco-cadastro',
@@ -65,12 +65,24 @@ export class ItemPrecoCadastro implements OnInit {
   descartar() {
     this.confirmationService.confirm({
       message: 'Deseja realmente descartar o cadastro? Todos os dados serão perdidos.',
-      header: 'Confirmar',
+      header: 'Confirmar Descarte',
       icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
       acceptLabel: 'Sim, descartar',
       rejectLabel: 'Cancelar',
       accept: () => {
-        this.router.navigate(['/itens-preco']);
+        this.itemPrecoForm.reset();
+        this.precoDisplayValue = '';
+
+        this.messageService.add({
+          severity: 'info',
+          summary: 'Descartado',
+          detail: 'Cadastro descartado com sucesso.',
+        });
+
+        setTimeout(() => {
+          this.router.navigate(['/itens-preco']);
+        }, 1500);
       },
     });
   }

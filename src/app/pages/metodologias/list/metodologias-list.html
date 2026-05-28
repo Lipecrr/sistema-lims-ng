@@ -114,40 +114,6 @@
       </ng-container>
     </section>
 
-    <section class="grid gap-4 md:grid-cols-3">
-      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <p class="text-sm font-semibold text-slate-700">Aguardando Revisão</p>
-            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.aguardandoRevisao }}</p>
-          </div>
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-[#1e40af]">
-            <i class="pi pi-clock text-2xl"></i>
-          </div>
-        </div>
-      </div>
-      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <p class="text-sm font-semibold text-slate-700">Conformidade Técnica</p>
-            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.conformidadeTecnica }}</p>
-          </div>
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-emerald-700">
-            <i class="pi pi-shield text-2xl"></i>
-          </div>
-        </div>
-      </div>
-      <div class="rounded-[28px] border border-[#e5e7eb] bg-white p-6 shadow-sm">
-        <div class="flex items-center justify-between gap-4">
-          <div>
-            <p class="text-sm font-semibold text-slate-700">Métodos Obsoletos</p>
-            <p class="mt-3 text-3xl font-semibold text-slate-950" *ngIf="resumo$ | async as resumo">{{ resumo.metodosObsoletos }}</p>
-          </div>
-          <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-amber-700">
-            <i class="pi pi-exclamation-triangle text-2xl"></i>
-          </div>
-        </div>
-      </div>
-    </section>
+
   </div>
 </div>

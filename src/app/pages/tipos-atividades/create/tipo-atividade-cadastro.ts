@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InformacaoAtividadeModel, TipoAtividadeModel } from '@/models/tipo-atividade.model';
-import { TiposAtividadesService } from '@/services/tipos-atividades.service';
+import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
 
 @Component({
   selector: 'app-tipo-atividade-cadastro',

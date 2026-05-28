@@ -294,9 +294,9 @@ export class List {
 
   public readonly resumo$ = this.colaboradoresSubject.asObservable().pipe(
     map((items) => ({
-      total: items.length,
       ativos: items.filter((item) => item.status === 'Ativo').length,
-      afastados: items.filter((item) => item.status === 'Férias').length,
+      ferias: items.filter((item) => item.status === 'Férias').length,
+      afastados: items.filter((item) => item.status === 'Afastado').length,
     }))
   );
 

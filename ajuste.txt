@@ -2,23 +2,23 @@
 *Criar um nome para o progeto* ⌛
 
 
-Ajustar cards da tela de Lista de Colaboradores. ⌛
+Ajustar cards da tela de Lista de Colaboradores. ✅
     -Colaboradores Ativos | Ferias | Afastados
 
-Ajustar Anexo de fotos da tela de Cadastro de novo Colaborador. ⌛
+Ajustar Anexo de fotos da tela de Cadastro de novo Colaborador. ✅
 
 Ajustar permições de acesso.
 
-Remover logo e adicionar ID no lugar na tela de Lista de Clientes. ⌛
+Remover logo e adicionar ID no lugar na tela de Lista de Clientes. ✅ id n foi colocado no lugar ainda
 
-Ajustar cards da tela de Lista de clientes. ⌛
+Ajustar cards da tela de Lista de clientes. ✅
     -Clientes | Contratos Ativos | Clientes inadimplentes
 
 Ajustar botões de ações de TODAS as listas. ⌛
 
-Ajustar alert de descartar na tela de cadastro de Novo Item de Preço. ⌛
+Ajustar alert de descartar na tela de cadastro de Novo Item de Preço. ✅
 
-Remover os cards da tela de Listagem de Metodologias de Análise. ⌛
+Remover os cards da tela de Listagem de Metodologias de Análise. ✅
 
 Ajustar tela de Nova Amostra Padrão. ⌛
     -Padronizar com os restante das telas de cadastro.

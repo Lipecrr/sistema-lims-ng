@@ -5,7 +5,7 @@ import { Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { MetodologiaCadastroService } from '@/services/metodologia-cadastro.service';
+import { MetodologiaCadastroService } from 'src/services/metodologia-cadastro.service';
 import { TipoAmostra, UnidadeMedida, AnaliseModel } from '@/models/analise.model';
 
 interface Equipamento {

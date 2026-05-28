@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterLink } from '@angular/router';
-import { TiposAtividadesService } from '@/services/tipos-atividades.service';
+import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
 
 @Component({
   selector: 'app-tipos-atividades-list',
