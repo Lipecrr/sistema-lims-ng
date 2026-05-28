@@ -1,3 +1,6 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
 <div class="min-h-screen bg-[#f7f9fb] py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-7xl mx-auto space-y-6">
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -20,145 +23,193 @@
       </div>
     </div>
 
-    <div class="grid gap-6 xl:grid-cols-[1.45fr_0.85fr]">
-      <div class="space-y-6">
-        <section class="rounded-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
-          <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
-            <div>
-              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Dados Pessoais</p>
-              <h2 class="text-xl font-bold text-[#1a1a1a]">Informações do colaborador</h2>
-            </div>
-            <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
-              <span class="inline-flex h-4 w-4 items-center justify-center">👤</span> Perfil
-            </div>
+    <!-- Abas de Navegação -->
+    <div class="flex gap-2 border-b border-[#e5e7eb] bg-white rounded-t-[1rem]">
+      <button type="button" (click)="trocarAba('informacoes')"
+        [class]="abaAtiva === 'informacoes'
+          ? 'px-6 py-4 text-sm font-semibold text-[#1e40af] border-b-2 border-[#1e40af]'
+          : 'px-6 py-4 text-sm font-semibold text-slate-600 transition hover:text-slate-900'">
+        <span class="inline-flex items-center gap-2">
+          <span>👤</span> Informações do Colaborador
+        </span>
+      </button>
+      <button type="button" (click)="trocarAba('cargo')"
+        [class]="abaAtiva === 'cargo'
+          ? 'px-6 py-4 text-sm font-semibold text-[#1e40af] border-b-2 border-[#1e40af]'
+          : 'px-6 py-4 text-sm font-semibold text-slate-600 transition hover:text-slate-900'">
+        <span class="inline-flex items-center gap-2">
+          <span>🏢</span> Cargo e Unidade
+        </span>
+      </button>
+      <button type="button" (click)="trocarAba('credenciais')"
+        [class]="abaAtiva === 'credenciais'
+          ? 'px-6 py-4 text-sm font-semibold text-[#1e40af] border-b-2 border-[#1e40af]'
+          : 'px-6 py-4 text-sm font-semibold text-slate-600 transition hover:text-slate-900'">
+        <span class="inline-flex items-center gap-2">
+          <span>🔐</span> Credenciais
+        </span>
+      </button>
+    </div>
+
+    <form [formGroup]="formColaborador" class="space-y-6">
+      <!-- ABA: INFORMAÇÕES DO COLABORADOR -->
+      <section *ngIf="abaAtiva === 'informacoes'" class="rounded-b-[1rem] rounded-tr-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
+          <div>
+            <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Dados Pessoais</p>
+            <h2 class="text-xl font-bold text-[#1a1a1a]">Informações do colaborador</h2>
+          </div>
+          <div class="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-blue-700">
+            <span class="inline-flex h-4 w-4 items-center justify-center">👤</span> Perfil
+          </div>
+        </div>
+
+        <div class="space-y-6 pt-6">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Nome Completo *
+              <input type="text" formControlName="nomeCompleto" (blur)="gerarAcessoLogin()"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['nomeCompleto'].touched && controle['nomeCompleto'].invalid" class="text-xs text-red-600">Preencha o nome completo.</span>
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              CPF *
+              <input type="text" formControlName="cpf" maxlength="11" placeholder="Somente números"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['cpf'].touched && controle['cpf'].invalid" class="text-xs text-red-600">Informe um CPF válido com 11 dígitos.</span>
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              E-mail *
+              <input type="email" formControlName="email"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['email'].touched && controle['email'].invalid" class="text-xs text-red-600">Informe um e-mail válido.</span>
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Telefone *
+              <input type="tel" formControlName="telefone" maxlength="11" placeholder="Somente números"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['telefone'].touched && controle['telefone'].invalid" class="text-xs text-red-600">Use 10 ou 11 dígitos para telefone.</span>
+            </label>
           </div>
 
-          <form [formGroup]="formColaborador" class="space-y-6 pt-6">
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Nome Completo
-                <input type="text" formControlName="nomeCompleto"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['nomeCompleto'].touched && controle['nomeCompleto'].invalid" class="text-xs text-red-600">Preencha o nome completo.</span>
-              </label>
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                CPF
-                <input type="text" formControlName="cpf" maxlength="11" placeholder="Somente números"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['cpf'].touched && controle['cpf'].invalid" class="text-xs text-red-600">Informe um CPF válido com 11 dígitos.</span>
-              </label>
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                E-mail
-                <input type="email" formControlName="email"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['email'].touched && controle['email'].invalid" class="text-xs text-red-600">Informe um e-mail válido.</span>
-              </label>
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Telefone
-                <input type="tel" formControlName="telefone" maxlength="11" placeholder="Somente números"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['telefone'].touched && controle['telefone'].invalid" class="text-xs text-red-600">Use 10 ou 11 dígitos para telefone.</span>
-              </label>
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-[1.3fr_0.7fr]">
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Foto de perfil
-                <div class="flex flex-col gap-3 rounded-3xl border border-dashed border-slate-300 bg-[#f8fafc] p-4 text-sm text-slate-600">
-                  <span>{{ fotoNome }}</span>
-                  <input type="file" accept="image/*" (change)="onFileChange($event)"
-                    class="text-sm text-slate-500" />
-                </div>
-              </label>
-              <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-sm text-slate-700">
-                <p class="font-semibold text-slate-900">Regra rápida</p>
-                <p class="mt-2">Use uma foto clara, tamanho máximo 5MB e fundo neutro.</p>
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700 lg:col-span-2">
+              Foto de perfil
+              <div class="flex flex-col gap-3 rounded-3xl border border-dashed border-slate-300 bg-[#f8fafc] p-4 text-sm text-slate-600">
+                <span>{{ fotoNome }}</span>
+                <input type="file" accept="image/*" (change)="onFileChange($event)"
+                  class="text-sm text-slate-500" />
               </div>
-            </div>
-          </form>
-        </section>
-
-        <section class="rounded-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
-          <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
-            <div>
-              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Dados profissionais</p>
-              <h2 class="text-xl font-bold text-[#1a1a1a]">Cargo e unidade</h2>
-            </div>
-            <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-              <span class="inline-flex h-4 w-4 items-center justify-center">🏢</span> Organização
+            </label>
+            <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-sm text-slate-700 flex flex-col justify-center">
+              <p class="font-semibold text-slate-900">Regra rápida</p>
+              <p class="mt-2">Use uma foto clara, tamanho máximo 5MB e fundo neutro.</p>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div class="space-y-6 pt-6">
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Cargo
-                <input type="text" formControlName="cargo"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['cargo'].touched && controle['cargo'].invalid" class="text-xs text-red-600">O cargo é obrigatório.</span>
-              </label>
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Departamento
-                <input type="text" formControlName="departamento"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['departamento'].touched && controle['departamento'].invalid" class="text-xs text-red-600">O departamento é obrigatório.</span>
-              </label>
-            </div>
-
-            <div class="grid gap-4 sm:grid-cols-2">
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Matrícula
-                <input type="text" formControlName="matricula"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-                <span *ngIf="controle['matricula'].touched && controle['matricula'].invalid" class="text-xs text-red-600">Informe a matrícula.</span>
-              </label>
-              <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-                Permissão de sistema
-                <select formControlName="permissao"
-                  class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
-                  <option value="">Selecione</option>
-                  <option *ngFor="let permissao of permissoes" [value]="permissao.value">{{ permissao.label }}</option>
-                </select>
-                <span *ngIf="controle['permissao'].touched && controle['permissao'].invalid" class="text-xs text-red-600">Selecione uma permissão.</span>
-              </label>
-            </div>
+      <!-- ABA: CARGO E UNIDADE -->
+      <section *ngIf="abaAtiva === 'cargo'" class="rounded-b-[1rem] rounded-tr-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
+          <div>
+            <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Dados profissionais</p>
+            <h2 class="text-xl font-bold text-[#1a1a1a]">Cargo e unidade</h2>
           </div>
-        </section>
-      </div>
-
-      <aside class="space-y-6">
-        <section class="rounded-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
-          <div class="flex items-center justify-between gap-3 pb-4 border-b border-[#e5e7eb]">
-            <div>
-              <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Acesso ao sistema</p>
-              <h2 class="text-xl font-bold text-[#1a1a1a]">Credenciais</h2>
-            </div>
-            <div class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Seguro</div>
+          <div class="inline-flex items-center gap-2 rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
+            <span class="inline-flex h-4 w-4 items-center justify-center">🏢</span> Organização
           </div>
+        </div>
 
-          <div class="space-y-4 pt-6">
+        <div class="space-y-6 pt-6">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Cargo
+              <input type="text" formControlName="cargo"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['cargo'].touched && controle['cargo'].invalid" class="text-xs text-red-600">O cargo é obrigatório.</span>
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Departamento
+              <input type="text" formControlName="departamento"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['departamento'].touched && controle['departamento'].invalid" class="text-xs text-red-600">O departamento é obrigatório.</span>
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Matrícula
+              <input type="text" formControlName="matricula"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['matricula'].touched && controle['matricula'].invalid" class="text-xs text-red-600">Informe a matrícula.</span>
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Permissão de sistema
+              <select formControlName="permissao"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                <option value="">Selecione</option>
+                <option *ngFor="let permissao of permissoes" [value]="permissao.value">{{ permissao.label }}</option>
+              </select>
+              <span *ngIf="controle['permissao'].touched && controle['permissao'].invalid" class="text-xs text-red-600">Selecione uma permissão.</span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ABA: CREDENCIAIS -->
+      <section *ngIf="abaAtiva === 'credenciais'" class="rounded-b-[1rem] rounded-tr-[1rem] border border-[#e5e7eb] bg-white p-6 shadow-sm">
+        <div class="flex items-center justify-between gap-4 pb-4 border-b border-[#e5e7eb]">
+          <div>
+            <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Acesso ao sistema</p>
+            <h2 class="text-xl font-bold text-[#1a1a1a]">Credenciais</h2>
+          </div>
+          <div class="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">Seguro</div>
+        </div>
+
+        <div class="space-y-6 pt-6">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Acesso para Login
+              <div class="flex gap-2">
+                <input type="text" formControlName="acessoLogin"
+                  class="flex-1 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+                <button type="button" (click)="gerarAcessoLogin()"
+                  class="inline-flex items-center justify-center rounded-xl border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                  title="Gerar acesso automaticamente">
+                  <span>🔄</span>
+                </button>
+              </div>
+              <span class="text-xs text-slate-500">Gerado automaticamente a partir do nome.</span>
+            </label>
             <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
               Senha temporária
               <input type="password" formControlName="senhaTemporaria"
                 class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
               <span class="text-xs text-slate-500">Deixe em branco para gerar automaticamente.</span>
             </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              Confirmar Senha
+              <input type="password" formControlName="confirmarSenha"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <span *ngIf="controle['confirmarSenha'].touched && formColaborador.hasError('senhasNaoConferem')" class="text-xs text-red-600">As senhas não conferem.</span>
+            </label>
+          </div>
 
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             <label class="flex items-center gap-3 rounded-2xl border border-[#e5e7eb] bg-[#f8fafc] px-4 py-3 text-sm text-slate-700">
               <input type="checkbox" formControlName="enviarEmail" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
               <span>Enviar credenciais por e-mail</span>
             </label>
-
-            <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-sm text-slate-700">
-              <p class="font-semibold text-slate-900">Resumo rápido</p>
-              <p class="mt-2">O colaborador terá acesso ao sistema conforme a permissão selecionada. Se a opção de e-mail estiver ativada, ele receberá as credenciais automaticamente.</p>
-            </div>
+            <label class="flex items-center gap-3 rounded-2xl border border-[#e5e7eb] bg-[#f8fafc] px-4 py-3 text-sm text-slate-700">
+              <input type="checkbox" formControlName="forcarTrocaSenha" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
+              <span>Forçar troca de senha no primeiro acesso</span>
+            </label>
           </div>
-        </section>
-      </aside>
-    </div>
+
+          <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 text-sm text-slate-700">
+            <p class="font-semibold text-slate-900">Resumo rápido</p>
+            <p class="mt-2">O colaborador terá acesso ao sistema conforme a permissão selecionada. Se a opção de e-mail estiver ativada, ele receberá as credenciais automaticamente.</p>
+          </div>
+        </div>
+      </section>
+    </form>
   </div>
 </div>
