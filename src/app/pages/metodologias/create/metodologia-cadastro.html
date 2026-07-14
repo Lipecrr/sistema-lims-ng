@@ -6,19 +6,24 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Cadastro</p>
-        <h1 class="text-3xl font-bold text-[#1a1a1a]">Nova Metodologia de Análise</h1>
+        <h1 class="text-3xl font-bold text-[#1a1a1a]">{{ tituloPagina }}</h1>
         <p class="mt-1 text-sm text-slate-600">Crie e valide a metodologia com recursos, criticidade e análises.</p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <button type="button" (click)="descartar()"
+        <button *ngIf="!modoVisualizacao" type="button" (click)="descartar()"
           class="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300">
           <span class="inline-flex h-4 w-4 items-center justify-center text-slate-600">×</span>
           Descartar
         </button>
-        <button type="button" (click)="salvar()"
+        <button *ngIf="!modoVisualizacao" type="button" (click)="salvar()"
           class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
           <span class="inline-flex h-4 w-4 items-center justify-center">💾</span>
           Salvar
+        </button>
+        <button *ngIf="modoVisualizacao" type="button" (click)="irParaEdicao()"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
+          <i class="pi pi-pencil"></i>
+          Editar
         </button>
       </div>
     </div>
@@ -148,7 +153,7 @@
               </div>
 
               <!-- Formulário de adição -->
-              <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+              <div *ngIf="!modoVisualizacao" class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
                 <div class="grid gap-4 sm:grid-cols-[1.3fr_0.7fr_auto]">
                   <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
                     Nome do equipamento
@@ -178,7 +183,7 @@
                     <div class="flex items-center">
                       <p class="text-sm text-slate-600">Qtd: <span class="font-semibold">{{ equipamento.quantidade }}</span></p>
                     </div>
-                    <button type="button" (click)="removerEquipamento(i)"
+                    <button *ngIf="!modoVisualizacao" type="button" (click)="removerEquipamento(i)"
                       class="inline-flex h-12 items-center justify-center rounded-2xl border border-transparent bg-red-50 px-3 text-red-700 transition hover:bg-red-100">
                       <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
                     </button>
@@ -194,7 +199,7 @@
               </div>
 
               <!-- Formulário de adição -->
-              <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+              <div *ngIf="!modoVisualizacao" class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
                 <div class="grid gap-4 sm:grid-cols-[1.3fr_0.7fr_auto]">
                   <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
                     Nome do reagente
@@ -224,7 +229,7 @@
                     <div class="flex items-center">
                       <p class="text-sm text-slate-600">Qtd: <span class="font-semibold">{{ reagente.quantidade }}</span></p>
                     </div>
-                    <button type="button" (click)="removerReagente(i)"
+                    <button *ngIf="!modoVisualizacao" type="button" (click)="removerReagente(i)"
                       class="inline-flex h-12 items-center justify-center rounded-2xl border border-transparent bg-red-50 px-3 text-red-700 transition hover:bg-red-100">
                       <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
                     </button>
@@ -249,7 +254,7 @@
 
           <div class="space-y-6 pt-6">
             <!-- Formulário de adição -->
-            <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
+            <div *ngIf="!modoVisualizacao" class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-4 shadow-sm">
               <div class="grid gap-4 sm:grid-cols-2">
                 <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
                   Tipo de Embalagem
@@ -319,7 +324,7 @@
                   <div class="flex items-center">
                     <p class="text-sm text-slate-600">Preserv: <span class="font-semibold">{{ embalagem.preservante || '-' }}</span></p>
                   </div>
-                  <button type="button" (click)="removerEmbalagem(i)"
+                  <button *ngIf="!modoVisualizacao" type="button" (click)="removerEmbalagem(i)"
                     class="inline-flex h-12 items-center justify-center rounded-2xl border border-transparent bg-red-50 px-3 text-red-700 transition hover:bg-red-100">
                     <span class="inline-flex h-4 w-4 items-center justify-center">🗑️</span>
                   </button>
@@ -343,7 +348,7 @@
 
           <div class="space-y-6 pt-6">
             <!-- Formulário de adição -->
-            <div class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-6 shadow-sm">
+            <div *ngIf="!modoVisualizacao" class="rounded-3xl border border-[#e5e7eb] bg-[#f9fafb] p-6 shadow-sm">
               <p class="text-sm uppercase tracking-[0.1em] text-slate-500 mb-4 font-semibold">Nova análise</p>
 
               <div class="grid gap-4 sm:grid-cols-2">
@@ -425,7 +430,7 @@
                     <p class="text-xs uppercase tracking-[0.1em] text-slate-500">Análise {{ i + 1 }}</p>
                     <h4 class="text-sm font-semibold text-slate-900">{{ analise.identificacao }}</h4>
                   </div>
-                  <div class="flex items-center gap-2">
+                  <div *ngIf="!modoVisualizacao" class="flex items-center gap-2">
                     <button type="button" (click)="editarAnalise(i)"
                       class="inline-flex h-10 items-center justify-center rounded-2xl border border-transparent bg-amber-50 px-3 text-amber-700 transition hover:bg-amber-100">
                       Editar

@@ -5,4 +5,5 @@ export interface ItemPrecoResponseModel {
   identificacao: string;
   preco: number;
   tipo: TipoItemPreco;
+  status: 'Ativo' | 'Inativo';
 }

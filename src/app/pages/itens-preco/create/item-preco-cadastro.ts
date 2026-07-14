@@ -1,7 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { map } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -16,14 +17,25 @@ import { ItensPrecoService } from 'src/services/itens-preco.service';
   templateUrl: './item-preco-cadastro.html',
 })
 export class ItemPrecoCadastro implements OnInit {
+  private route = inject(ActivatedRoute);
+
   itemPrecoForm!: FormGroup;
   precoDisplayValue = '';
+
+  id: string | null = null;
+  modoVisualizacao = false;
+  carregando = false;
 
   tipos: { label: string; value: TipoItemPreco }[] = [
     { label: 'Despesa', value: 'Despesa' },
     { label: 'Produto', value: 'Produto' },
     { label: 'Serviço', value: 'Serviço' },
   ];
+
+  get tituloPagina(): string {
+    if (this.modoVisualizacao) return 'Visualizar Item de Preço';
+    return this.id ? 'Editar Item de Preço' : 'Novo Item de Preço';
+  }
 
   constructor(
     private fb: FormBuilder,
@@ -35,6 +47,31 @@ export class ItemPrecoCadastro implements OnInit {
 
   ngOnInit() {
     this.initForm();
+
+    this.id = this.route.snapshot.paramMap.get('id');
+    this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
+
+    if (this.id) {
+      this.carregando = true;
+      this.itensPrecoService.obterPorId(this.id).subscribe({
+        next: (item) => {
+          this.itemPrecoForm.patchValue({
+            identificacao: item.identificacao,
+            preco: item.preco,
+            tipo: item.tipo,
+          });
+          this.precoDisplayValue = item.preco.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+          this.carregando = false;
+          if (this.modoVisualizacao) {
+            this.itemPrecoForm.disable();
+          }
+        },
+        error: () => {
+          this.carregando = false;
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar o item de preço.' });
+        },
+      });
+    }
   }
 
   initForm() {
@@ -45,10 +82,16 @@ export class ItemPrecoCadastro implements OnInit {
     });
   }
 
+  irParaEdicao(): void {
+    if (this.id) {
+      this.router.navigate(['/itens-preco', this.id, 'editar']);
+    }
+  }
+
   onPrecoInput(event: Event) {
     const input = event.target as HTMLInputElement;
     let value = input.value.replace(/[^\d]/g, '');
-    
+
     if (value) {
       const numberValue = parseInt(value, 10) / 100;
       this.precoDisplayValue = numberValue.toLocaleString('pt-BR', {
@@ -98,16 +141,22 @@ export class ItemPrecoCadastro implements OnInit {
       return;
     }
 
-    this.itensPrecoService.addItemPreco({
+    const payload = {
       identificacao: this.itemPrecoForm.value.identificacao,
       preco: this.itemPrecoForm.value.preco,
       tipo: this.itemPrecoForm.value.tipo,
-    }).subscribe({
+    };
+
+    const operacao = this.id
+      ? this.itensPrecoService.atualizar(this.id, payload)
+      : this.itensPrecoService.addItemPreco(payload).pipe(map(() => undefined));
+
+    operacao.subscribe({
       next: () => {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: 'Item de preço cadastrado com sucesso!',
+          detail: this.id ? 'Item de preço atualizado com sucesso!' : 'Item de preço cadastrado com sucesso!',
         });
 
         setTimeout(() => {
@@ -118,7 +167,7 @@ export class ItemPrecoCadastro implements OnInit {
         this.messageService.add({
           severity: 'error',
           summary: 'Erro',
-          detail: 'Não foi possível cadastrar o item de preço. Tente novamente.',
+          detail: 'Não foi possível salvar o item de preço. Tente novamente.',
         });
       },
     });

@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { combineLatest, map, Observable, BehaviorSubject } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ColaboradorResponseModel } from '@/models/colaborador.model';
 import { ColaboradoresService } from 'src/services/colaboradores.service';
 
@@ -24,12 +27,15 @@ interface PaginatedResult {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })
 export class List {
   private fb = inject(FormBuilder);
   private colaboradoresService = inject(ColaboradoresService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   filtrosForm = this.fb.group({
     search: [''],
@@ -144,7 +150,33 @@ export class List {
     }
   }
 
-  removerColaborador(id: string): void {
-    this.colaboradoresService.deleteColaborador(id).subscribe(() => this.setPage(1));
+  alternarStatus(item: ColaboradorResponseModel): void {
+    const inativando = item.status === 'Ativo';
+    this.confirmationService.confirm({
+      message: `Deseja realmente ${inativando ? 'inativar' : 'ativar'} "${item.nome}"?`,
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: inativando ? 'Sim, inativar' : 'Sim, ativar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        const operacao = inativando ? this.colaboradoresService.inativar(item.id) : this.colaboradoresService.ativar(item.id);
+        operacao.subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Colaborador ${inativando ? 'inativado' : 'ativado'} com sucesso.`,
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: `Não foi possível ${inativando ? 'inativar' : 'ativar'} o colaborador.`,
+            });
+          },
+        });
+      },
+    });
   }
 }

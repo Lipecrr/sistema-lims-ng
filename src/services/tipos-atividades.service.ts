@@ -18,6 +18,7 @@ interface TipoAtividadeApi {
 function paraModel(item: TipoAtividadeApi): TipoAtividadeModel {
   return {
     id: item.id,
+    status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
     versao: item.versao,
     tipo: item.tipo,
     fluxoEtapas: item.fluxo_etapas,
@@ -25,7 +26,7 @@ function paraModel(item: TipoAtividadeApi): TipoAtividadeModel {
   };
 }
 
-function paraApiRequest(item: Omit<TipoAtividadeModel, 'id'>) {
+function paraApiRequest(item: Omit<TipoAtividadeModel, 'id' | 'status'>) {
   return {
     status: 'ATIVO',
     versao: item.versao,
@@ -56,10 +57,37 @@ export class TiposAtividadesService {
     return this.tiposAtividades$;
   }
 
-  addTipoAtividade(tipoAtividade: Omit<TipoAtividadeModel, 'id'>): Observable<TipoAtividadeModel> {
+  obterPorId(id: string): Observable<TipoAtividadeModel> {
+    return this.http.get<TipoAtividadeApi>(`${API_URL}/${id}`).pipe(map(paraModel));
+  }
+
+  addTipoAtividade(tipoAtividade: Omit<TipoAtividadeModel, 'id' | 'status'>): Observable<TipoAtividadeModel> {
     return this.http.post<TipoAtividadeApi>(API_URL, paraApiRequest(tipoAtividade)).pipe(
       tap(() => this.reloadSubject.next()),
       map(paraModel)
+    );
+  }
+
+  atualizar(id: string, tipoAtividade: Omit<TipoAtividadeModel, 'id' | 'status'>): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}`, {
+      versao: tipoAtividade.versao,
+      tipo: tipoAtividade.tipo,
+      fluxo_etapas: tipoAtividade.fluxoEtapas,
+      informacoes: tipoAtividade.informacoes,
+    }).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  ativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  inativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
     );
   }
 

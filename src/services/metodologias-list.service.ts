@@ -32,6 +32,7 @@ export interface MetodologiaApi {
 export function paraModel(item: MetodologiaApi): MetodologiaModel {
   return {
     id: item.id,
+    status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
     codigo: item.codigo,
     nome: item.nome,
     norma: item.norma,
@@ -55,6 +56,8 @@ export function paraModel(item: MetodologiaApi): MetodologiaModel {
       unidadeMedida: e.unidade_medida,
       preservante: e.preservante ?? '',
     })),
+    equipamentos: item.equipamentos.map((r) => ({ nome: r.nome, quantidade: r.quantidade })),
+    reagentes: item.reagentes.map((r) => ({ nome: r.nome, quantidade: r.quantidade })),
   };
 }
 
@@ -80,6 +83,22 @@ export class MetodologiasListService {
 
   recarregar(): void {
     this.reloadSubject.next();
+  }
+
+  obterPorId(id: string): Observable<MetodologiaModel> {
+    return this.http.get<MetodologiaApi>(`${METODOLOGIAS_API_URL}/${id}`).pipe(map(paraModel));
+  }
+
+  ativar(id: string): Observable<void> {
+    return this.http.put<void>(`${METODOLOGIAS_API_URL}/${id}/ativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  inativar(id: string): Observable<void> {
+    return this.http.put<void>(`${METODOLOGIAS_API_URL}/${id}/inativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
   }
 
   deleteMetodologia(id: string): Observable<void> {

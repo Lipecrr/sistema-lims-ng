@@ -60,6 +60,7 @@ export interface CriarClienteApiPayload {
 function paraModel(item: ClienteApi): ClienteResponseModel {
   return {
     id: item.id,
+    status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
     nome_empresa_nome_pf: item.tipo_pessoa === 'PJ' ? (item.razao_social ?? '') : (item.nome_completo ?? ''),
     cnpj_cpf: item.tipo_pessoa === 'PJ' ? (item.cnpj ?? '') : (item.cpf ?? ''),
     contratos_ativos: item.contratos_ativos,
@@ -96,6 +97,23 @@ export class ClientesService {
     const criado = await firstValueFrom(this.http.post<ClienteApi>(API_URL, payload));
     this.reloadSubject.next();
     return paraModel(criado);
+  }
+
+  async atualizar(id: string, payload: CriarClienteApiPayload): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${API_URL}/${id}`, payload));
+    this.reloadSubject.next();
+  }
+
+  ativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  inativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
   }
 
   deleteCliente(id: string): Observable<void> {

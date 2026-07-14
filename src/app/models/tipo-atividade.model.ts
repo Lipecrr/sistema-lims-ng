@@ -5,6 +5,7 @@ export interface InformacaoAtividadeModel {
 
 export interface TipoAtividadeModel {
   id: string;
+  status: 'Ativo' | 'Inativo';
   versao: number;
   tipo: string;
   fluxoEtapas: string[];

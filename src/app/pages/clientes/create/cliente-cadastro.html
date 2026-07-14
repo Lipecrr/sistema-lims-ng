@@ -7,19 +7,24 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Cadastro</p>
-        <h1 class="text-3xl font-bold text-[#1a1a1a]">Novo Cliente</h1>
+        <h1 class="text-3xl font-bold text-[#1a1a1a]">{{ tituloPagina }}</h1>
         <p class="mt-1 text-sm text-slate-600">Cadastre um novo cliente preenchendo as informações empresariais/pessoais e de contato.</p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <button type="button" (click)="descartar()"
+        <button *ngIf="!modoVisualizacao" type="button" (click)="descartar()"
           class="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300">
           <span class="inline-flex h-4 w-4 items-center justify-center text-slate-600">×</span>
           Descartar
         </button>
-        <button type="button" (click)="salvar()"
+        <button *ngIf="!modoVisualizacao" type="button" (click)="salvar()"
           class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
           <span class="inline-flex h-4 w-4 items-center justify-center">💾</span>
           Salvar
+        </button>
+        <button *ngIf="modoVisualizacao" type="button" (click)="irParaEdicao()"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
+          <i class="pi pi-pencil"></i>
+          Editar
         </button>
       </div>
     </div>
@@ -55,7 +60,7 @@
             </h2>
           </div>
           <!-- Toggle PJ/PF -->
-          <div class="inline-flex items-center gap-1 rounded-lg bg-slate-100 p-1">
+          <div *ngIf="!modoVisualizacao" class="inline-flex items-center gap-1 rounded-lg bg-slate-100 p-1">
             <button type="button" (click)="trocarTipoPessoa('PJ')"
               [class]="tipoPessoa === 'PJ'
                 ? 'rounded-md bg-white px-4 py-2 text-sm font-semibold text-[#1e40af] shadow-sm'
@@ -189,7 +194,7 @@
             <h3 class="text-lg font-semibold text-[#1a1a1a] mb-4">Contatos</h3>
             
             <!-- Formulário para adicionar novo contato -->
-            <div class="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-200">
+            <div *ngIf="!modoVisualizacao" class="bg-slate-50 rounded-xl p-4 mb-4 border border-slate-200">
               <div class="grid gap-4 sm:grid-cols-12 items-end">
                 <!-- Tipo -->
                 <div class="sm:col-span-2">
@@ -256,7 +261,7 @@
                   </div>
                 </div>
                 <!-- Ações -->
-                <button type="button" (click)="removerContato(i)"
+                <button *ngIf="!modoVisualizacao" type="button" (click)="removerContato(i)"
                   class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition"
                   title="Remover contato">
                   <span class="text-lg">🗑️</span>

@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { MetodologiasListService } from 'src/services/metodologias-list.service';
 import { TempoEstimadoPipe } from './tempo-estimado.pipe';
 import { MetodologiaModel, CriticidadeNivel } from '../../../models/metodologia.model';
@@ -25,12 +28,15 @@ interface PaginatedResult {
 @Component({
   selector: 'app-metodologias-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, TempoEstimadoPipe],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, TempoEstimadoPipe, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './metodologias-list.html',
 })
 export class MetodologiasList {
   private fb = inject(FormBuilder);
   private service = inject(MetodologiasListService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   filtrosForm: FormGroup = this.fb.group({
     search: [''],
@@ -152,7 +158,33 @@ export class MetodologiasList {
     return criticidade === 'alta' ? 'Alta' : criticidade === 'media' ? 'Média' : 'Baixa';
   }
 
-  removerMetodologia(id: string): void {
-    this.service.deleteMetodologia(id).subscribe(() => this.setPage(1));
+  alternarStatus(item: MetodologiaModel): void {
+    const inativando = item.status === 'Ativo';
+    this.confirmationService.confirm({
+      message: `Deseja realmente ${inativando ? 'inativar' : 'ativar'} "${item.nome}"?`,
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: inativando ? 'Sim, inativar' : 'Sim, ativar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        const operacao = inativando ? this.service.inativar(item.id) : this.service.ativar(item.id);
+        operacao.subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Metodologia ${inativando ? 'inativada' : 'ativada'} com sucesso.`,
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: `Não foi possível ${inativando ? 'inativar' : 'ativar'} a metodologia.`,
+            });
+          },
+        });
+      },
+    });
   }
 }

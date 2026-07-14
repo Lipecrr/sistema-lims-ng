@@ -1,7 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -80,6 +80,16 @@ export class ClienteCadastro implements OnInit {
     { header: 'TO', value: 'TO' },
   ];
 
+  id: string | null = null;
+  modoVisualizacao = false;
+
+  private readonly route = inject(ActivatedRoute);
+
+  get tituloPagina(): string {
+    if (this.modoVisualizacao) return 'Visualizar Cliente';
+    return this.id ? 'Editar Cliente' : 'Novo Cliente';
+  }
+
   constructor(
     private fb: FormBuilder,
     private router: Router,
@@ -90,6 +100,48 @@ export class ClienteCadastro implements OnInit {
 
   ngOnInit() {
     this.initForm();
+
+    this.id = this.route.snapshot.paramMap.get('id');
+    this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
+
+    if (this.id) {
+      this.clientesService.getClienteById(this.id).subscribe({
+        next: (item) => {
+          this.tipoPessoa = item.tipo_pessoa;
+          this.clienteForm.patchValue({
+            tipoPessoa: item.tipo_pessoa,
+            razaoSocial: item.razao_social ?? '',
+            nomeFantasia: item.nome_fantasia ?? '',
+            cnpj: item.cnpj ?? '',
+            inscricaoEstadual: item.inscricao_estadual ?? '',
+            segmento: item.segmento ?? '',
+            nomeCompleto: item.nome_completo ?? '',
+            cpf: item.cpf ?? '',
+            cep: item.cep,
+            logradouro: item.logradouro,
+            numero: item.numero,
+            cidade: item.cidade,
+            estado: item.estado,
+            telefone: item.telefone,
+            emailFaturamento: item.email_faturamento,
+          });
+          this.updateValidators();
+          this.contatos = item.contatos.map((c) => ({ tipo: c.tipo, setor: c.setor, valor: c.valor }));
+          if (this.modoVisualizacao) {
+            this.clienteForm.disable();
+          }
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar o cliente.' });
+        },
+      });
+    }
+  }
+
+  irParaEdicao(): void {
+    if (this.id) {
+      this.router.navigate(['/clientes', this.id, 'editar']);
+    }
   }
 
   initForm() {
@@ -321,32 +373,33 @@ export class ClienteCadastro implements OnInit {
     }
 
     const valores = this.clienteForm.getRawValue();
+    const payload = {
+      tipo_pessoa: this.tipoPessoa,
+      razao_social: this.tipoPessoa === 'PJ' ? valores.razaoSocial : null,
+      nome_fantasia: this.tipoPessoa === 'PJ' ? valores.nomeFantasia : null,
+      cnpj: this.tipoPessoa === 'PJ' ? valores.cnpj : null,
+      inscricao_estadual: this.tipoPessoa === 'PJ' ? valores.inscricaoEstadual : null,
+      segmento: this.tipoPessoa === 'PJ' ? valores.segmento : null,
+      nome_completo: this.tipoPessoa === 'PF' ? valores.nomeCompleto : null,
+      cpf: this.tipoPessoa === 'PF' ? valores.cpf : null,
+      cep: valores.cep!,
+      logradouro: valores.logradouro!,
+      numero: valores.numero!,
+      cidade: valores.cidade!,
+      estado: valores.estado!,
+      telefone: valores.telefone!,
+      email_faturamento: valores.emailFaturamento!,
+      contatos: this.contatos,
+    };
 
     try {
-      await this.clientesService.addCliente({
-        tipo_pessoa: this.tipoPessoa,
-        razao_social: this.tipoPessoa === 'PJ' ? valores.razaoSocial : null,
-        nome_fantasia: this.tipoPessoa === 'PJ' ? valores.nomeFantasia : null,
-        cnpj: this.tipoPessoa === 'PJ' ? valores.cnpj : null,
-        inscricao_estadual: this.tipoPessoa === 'PJ' ? valores.inscricaoEstadual : null,
-        segmento: this.tipoPessoa === 'PJ' ? valores.segmento : null,
-        nome_completo: this.tipoPessoa === 'PF' ? valores.nomeCompleto : null,
-        cpf: this.tipoPessoa === 'PF' ? valores.cpf : null,
-        cep: valores.cep!,
-        logradouro: valores.logradouro!,
-        numero: valores.numero!,
-        cidade: valores.cidade!,
-        estado: valores.estado!,
-        telefone: valores.telefone!,
-        email_faturamento: valores.emailFaturamento!,
-        contatos: this.contatos,
-      });
-
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Cliente cadastrado com sucesso!',
-      });
+      if (this.id) {
+        await this.clientesService.atualizar(this.id, payload);
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado com sucesso!' });
+      } else {
+        await this.clientesService.addCliente(payload);
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente cadastrado com sucesso!' });
+      }
 
       setTimeout(() => {
         this.router.navigate(['/clientes']);
@@ -355,7 +408,7 @@ export class ClienteCadastro implements OnInit {
       this.messageService.add({
         severity: 'error',
         summary: 'Erro',
-        detail: 'Não foi possível cadastrar o cliente. Tente novamente.',
+        detail: 'Não foi possível salvar o cliente. Tente novamente.',
       });
     }
   }

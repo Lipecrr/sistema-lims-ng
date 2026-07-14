@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { combineLatest, map, Observable, BehaviorSubject } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ClienteResponseModel } from '@/models/cliente.model';
 import { ClientesService } from 'src/services/clientes.service';
 
@@ -23,12 +26,15 @@ interface PaginatedResult {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })
 export class List {
   private fb = inject(FormBuilder);
   private clientesService = inject(ClientesService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   filtrosForm = this.fb.group({
     search: [''],
@@ -124,7 +130,33 @@ export class List {
     return Array.from({ length: count }, (_, index) => index + 1);
   }
 
-  removerCliente(id: string): void {
-    this.clientesService.deleteCliente(id).subscribe(() => this.setPage(1));
+  alternarStatus(item: ClienteResponseModel): void {
+    const inativando = item.status === 'Ativo';
+    this.confirmationService.confirm({
+      message: `Deseja realmente ${inativando ? 'inativar' : 'ativar'} "${item.nome_empresa_nome_pf}"?`,
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: inativando ? 'Sim, inativar' : 'Sim, ativar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        const operacao = inativando ? this.clientesService.inativar(item.id) : this.clientesService.ativar(item.id);
+        operacao.subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Cliente ${inativando ? 'inativado' : 'ativado'} com sucesso.`,
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: `Não foi possível ${inativando ? 'inativar' : 'ativar'} o cliente.`,
+            });
+          },
+        });
+      },
+    });
   }
 }

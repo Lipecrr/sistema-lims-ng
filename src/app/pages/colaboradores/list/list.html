@@ -1,3 +1,6 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
 <div class="min-h-screen bg-[#f7f9fb] px-4 py-6 sm:px-6 lg:px-8">
   <div class="mx-auto max-w-7xl space-y-6">
 
@@ -68,14 +71,14 @@
                 </td>
                 <td class="px-5 py-4">
                   <div class="flex justify-end gap-2 text-slate-500">
-                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
+                    <button type="button" [routerLink]="['/colaboradores', colaborador.id]" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
                       <i class="pi pi-eye"></i>
                     </button>
-                    <button type="button" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
+                    <button type="button" [routerLink]="['/colaboradores', colaborador.id, 'editar']" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
                       <i class="pi pi-pencil"></i>
                     </button>
-                    <button type="button" (click)="removerColaborador(colaborador.id)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-red-600 transition hover:bg-red-50" aria-label="Excluir">
-                      <i class="pi pi-trash"></i>
+                    <button type="button" (click)="alternarStatus(colaborador)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-amber-600 transition hover:bg-amber-50" [attr.aria-label]="colaborador.status === 'Ativo' ? 'Inativar' : 'Ativar'">
+                      <i [class]="colaborador.status === 'Ativo' ? 'pi pi-ban' : 'pi pi-check-circle'"></i>
                     </button>
                   </div>
                 </td>

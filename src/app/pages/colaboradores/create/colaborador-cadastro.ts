@@ -1,6 +1,7 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -27,6 +28,17 @@ export class ColaboradorCadastro implements OnInit {
   fotoPreview: string | null = null;
   isDragging = false;
 
+  id: string | null = null;
+  modoVisualizacao = false;
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly router = inject(Router);
+
+  get tituloPagina(): string {
+    if (this.modoVisualizacao) return 'Visualizar Colaborador';
+    return this.id ? 'Editar Colaborador' : 'Novo Colaborador';
+  }
+
   constructor(
     private fb: FormBuilder,
     private messageService: MessageService,
@@ -50,6 +62,41 @@ export class ColaboradorCadastro implements OnInit {
       enviarEmail: [true],
       forcarTrocaSenha: [true],
     }, { validators: this.validarSenhas });
+
+    this.id = this.route.snapshot.paramMap.get('id');
+    this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
+
+    if (this.id) {
+      this.colaboradoresService.obterPorId(this.id).subscribe({
+        next: (item) => {
+          this.formColaborador.patchValue({
+            nomeCompleto: item.nome_completo,
+            cpf: item.cpf,
+            email: item.email,
+            telefone: item.telefone,
+            cargo: item.cargo,
+            departamento: item.departamento,
+            matricula: item.matricula,
+            permissao: item.permissao,
+            acessoLogin: item.acesso_login,
+            enviarEmail: item.enviar_email,
+            forcarTrocaSenha: item.forcar_troca_senha,
+          });
+          if (this.modoVisualizacao) {
+            this.formColaborador.disable();
+          }
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar o colaborador.' });
+        },
+      });
+    }
+  }
+
+  irParaEdicao(): void {
+    if (this.id) {
+      this.router.navigate(['/colaboradores', this.id, 'editar']);
+    }
   }
 
   get controle() {
@@ -170,6 +217,10 @@ export class ColaboradorCadastro implements OnInit {
   }
 
   async salvar() {
+    if (!this.formColaborador.get('acessoLogin')?.value) {
+      this.gerarAcessoLogin();
+    }
+
     if (this.formColaborador.invalid) {
       this.formColaborador.markAllAsTouched();
       this.messageService.add({
@@ -183,26 +234,40 @@ export class ColaboradorCadastro implements OnInit {
     const valores = this.formColaborador.getRawValue();
 
     try {
-      await this.colaboradoresService.addColaborador({
-        nome_completo: valores.nomeCompleto,
-        cpf: valores.cpf,
-        email: valores.email,
-        telefone: valores.telefone,
-        cargo: valores.cargo,
-        departamento: valores.departamento,
-        matricula: valores.matricula,
-        permissao: valores.permissao,
-        acesso_login: valores.acessoLogin,
-        senha_temporaria: valores.senhaTemporaria || null,
-        enviar_email: valores.enviarEmail,
-        forcar_troca_senha: valores.forcarTrocaSenha,
-      });
+      if (this.id) {
+        await this.colaboradoresService.atualizar(this.id, {
+          nome_completo: valores.nomeCompleto,
+          cpf: valores.cpf,
+          email: valores.email,
+          telefone: valores.telefone,
+          cargo: valores.cargo,
+          departamento: valores.departamento,
+          matricula: valores.matricula,
+          permissao: valores.permissao,
+          acesso_login: valores.acessoLogin,
+          enviar_email: valores.enviarEmail,
+          forcar_troca_senha: valores.forcarTrocaSenha,
+        });
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Colaborador atualizado com sucesso.' });
+      } else {
+        await this.colaboradoresService.addColaborador({
+          nome_completo: valores.nomeCompleto,
+          cpf: valores.cpf,
+          email: valores.email,
+          telefone: valores.telefone,
+          cargo: valores.cargo,
+          departamento: valores.departamento,
+          matricula: valores.matricula,
+          permissao: valores.permissao,
+          acesso_login: valores.acessoLogin,
+          senha_temporaria: valores.senhaTemporaria || null,
+          enviar_email: valores.enviarEmail,
+          forcar_troca_senha: valores.forcarTrocaSenha,
+        });
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Colaborador salvo com sucesso.' });
+      }
 
-      this.messageService.add({
-        severity: 'success',
-        summary: 'Sucesso',
-        detail: 'Colaborador salvo com sucesso.'
-      });
+      setTimeout(() => this.router.navigate(['/colaboradores']), 1200);
     } catch {
       this.messageService.add({
         severity: 'error',

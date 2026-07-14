@@ -1,4 +1,7 @@
-﻿<div class="space-y-6 max-w-7xl mx-auto">
+﻿<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="space-y-6 max-w-7xl mx-auto">
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <div>
       <h1 class="text-2xl font-bold text-slate-900">Amostras Padrão</h1>
@@ -62,19 +65,15 @@
           <td class="px-5 py-4 text-slate-700">{{ item.publicacaoManual ? 'Sim' : 'Não' }}</td>
           <td class="px-5 py-4"><app-registro-status-tag [status]="item.status"></app-registro-status-tag></td>
           <td class="px-5 py-4">
-            <div class="flex justify-end gap-2">
-              <button
-                type="button"
-                class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100"
-              >
-                Editar
+            <div class="flex justify-end gap-2 text-slate-500">
+              <button type="button" [routerLink]="['/tipos-amostras', item.id]" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
+                <i class="pi pi-eye"></i>
               </button>
-              <button
-                type="button"
-                (click)="removerTipo(item.id)"
-                class="rounded-2xl border border-red-200 bg-red-50 px-4 py-2 text-sm text-red-700 transition hover:bg-red-100"
-              >
-                Excluir
+              <button type="button" [routerLink]="['/tipos-amostras', item.id, 'editar']" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button type="button" (click)="alternarStatus(item)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-amber-600 transition hover:bg-amber-50" [attr.aria-label]="item.status === 'Ativo' ? 'Inativar' : 'Ativar'">
+                <i [class]="item.status === 'Ativo' ? 'pi pi-ban' : 'pi pi-check-circle'"></i>
               </button>
             </div>
           </td>

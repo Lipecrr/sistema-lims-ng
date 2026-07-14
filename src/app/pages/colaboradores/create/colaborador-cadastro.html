@@ -6,19 +6,24 @@
     <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
       <div>
         <p class="text-sm uppercase tracking-[0.2em] text-slate-500">Cadastro</p>
-        <h1 class="text-3xl font-bold text-[#1a1a1a]">Novo Colaborador</h1>
+        <h1 class="text-3xl font-bold text-[#1a1a1a]">{{ tituloPagina }}</h1>
         <p class="mt-1 text-sm text-slate-600">Registre um novo usuário com acesso ao sistema e defina suas permissões.</p>
       </div>
       <div class="flex flex-wrap gap-3">
-        <button type="button" (click)="descartar()"
+        <button *ngIf="!modoVisualizacao" type="button" (click)="descartar()"
           class="inline-flex items-center gap-2 rounded-lg border border-[#e5e7eb] bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300">
           <span class="inline-flex h-4 w-4 items-center justify-center text-slate-600">×</span>
           Descartar
         </button>
-        <button type="button" (click)="salvar()"
+        <button *ngIf="!modoVisualizacao" type="button" (click)="salvar()"
           class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
           <span class="inline-flex h-4 w-4 items-center justify-center">💾</span>
           Salvar
+        </button>
+        <button *ngIf="modoVisualizacao" type="button" (click)="irParaEdicao()"
+          class="inline-flex items-center gap-2 rounded-lg bg-[#1e40af] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-900">
+          <i class="pi pi-pencil"></i>
+          Editar
         </button>
       </div>
     </div>

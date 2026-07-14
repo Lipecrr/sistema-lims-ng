@@ -70,10 +70,31 @@ export class ColaboradoresService {
     return this.colaboradores$;
   }
 
+  obterPorId(id: string): Observable<ColaboradorApi> {
+    return this.http.get<ColaboradorApi>(`${API_URL}/${id}`);
+  }
+
   async addColaborador(payload: CriarColaboradorApiPayload): Promise<ColaboradorResponseModel> {
     const criado = await firstValueFrom(this.http.post<ColaboradorApi>(API_URL, payload));
     this.reloadSubject.next();
     return paraModel(criado);
+  }
+
+  async atualizar(id: string, payload: Omit<CriarColaboradorApiPayload, 'senha_temporaria' | 'status'>): Promise<void> {
+    await firstValueFrom(this.http.put<void>(`${API_URL}/${id}`, payload));
+    this.reloadSubject.next();
+  }
+
+  ativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  inativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
   }
 
   deleteColaborador(id: string): Observable<void> {

@@ -59,10 +59,38 @@ export class TiposAmostrasService {
     return this.tipos$;
   }
 
+  obterPorId(id: string): Observable<TipoAmostraResponseModel> {
+    return this.http.get<TipoAmostraApi>(`${API_URL}/${id}`).pipe(map(paraModel));
+  }
+
   addTipoAmostra(tipoAmostra: Omit<TipoAmostraResponseModel, 'id'>): Observable<TipoAmostraResponseModel> {
     return this.http.post<TipoAmostraApi>(API_URL, paraApiRequest(tipoAmostra)).pipe(
       tap(() => this.reloadSubject.next()),
       map(paraModel)
+    );
+  }
+
+  atualizar(id: string, tipoAmostra: Omit<TipoAmostraResponseModel, 'id' | 'status'>): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}`, {
+      tipo: tipoAmostra.tipo,
+      motivo: tipoAmostra.motivo,
+      publicacao_manual: tipoAmostra.publicacaoManual,
+      obrigar_data_coleta: tipoAmostra.obrigarDataColeta,
+      observacoes: tipoAmostra.observacoes ?? null,
+    }).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  ativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
+    );
+  }
+
+  inativar(id: string): Observable<void> {
+    return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
+      tap(() => this.reloadSubject.next())
     );
   }
 

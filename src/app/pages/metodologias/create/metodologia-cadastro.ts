@@ -1,11 +1,12 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { MetodologiaCadastroService } from 'src/services/metodologia-cadastro.service';
+import { MetodologiasListService } from 'src/services/metodologias-list.service';
 import { TipoAmostra, UnidadeMedida, AnaliseModel } from '@/models/analise.model';
 
 interface Equipamento {
@@ -148,6 +149,19 @@ export class MetodologiaCadastro implements OnInit {
     { label: 'Alta', value: 'alta' }
   ];
 
+id: string | null = null;
+  modoVisualizacao = false;
+  codigoExistente = '';
+  obsoletoExistente = false;
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly metodologiasListService = inject(MetodologiasListService);
+
+  get tituloPagina(): string {
+    if (this.modoVisualizacao) return 'Visualizar Metodologia de Análise';
+    return this.id ? 'Editar Metodologia de Análise' : 'Nova Metodologia de Análise';
+  }
+
   constructor(private fb: FormBuilder, private service: MetodologiaCadastroService, private router: Router, private messageService: MessageService, private confirmationService: ConfirmationService) {}
 
   ngOnInit() {
@@ -158,6 +172,41 @@ export class MetodologiaCadastro implements OnInit {
       setor: ['', Validators.required],
       criticidade: ['media', Validators.required]
     });
+
+    this.id = this.route.snapshot.paramMap.get('id');
+    this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
+
+    if (this.id) {
+      this.metodologiasListService.obterPorId(this.id).subscribe({
+        next: (item) => {
+          this.formMetodologia.patchValue({
+            nome: item.nome,
+            norma: item.norma,
+            prazoConclusao: item.prazoConclusaoDias,
+            setor: item.setor,
+            criticidade: item.criticidade,
+          });
+          this.codigoExistente = item.codigo;
+          this.obsoletoExistente = item.obsoleto;
+          this.analises = item.analises ?? [];
+          this.embalagens = item.embalagens ?? [];
+          this.equipamentos = item.equipamentos ?? [];
+          this.reagentes = item.reagentes ?? [];
+          if (this.modoVisualizacao) {
+            this.formMetodologia.disable();
+          }
+        },
+        error: () => {
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a metodologia.' });
+        },
+      });
+    }
+  }
+
+  irParaEdicao(): void {
+    if (this.id) {
+      this.router.navigate(['/metodologias', this.id, 'editar']);
+    }
   }
 
   // EMBALAGENS
@@ -315,9 +364,14 @@ export class MetodologiaCadastro implements OnInit {
     };
 
     try {
-      await this.service.save(dados);
-      this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Metodologia de Análise salva com sucesso!' });
-      
+      if (this.id) {
+        await this.service.atualizar(this.id, dados, this.codigoExistente, this.obsoletoExistente);
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Metodologia de Análise atualizada com sucesso!' });
+      } else {
+        await this.service.save(dados);
+        this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Metodologia de Análise salva com sucesso!' });
+      }
+
       // Aguarda um pouco para exibir a mensagem antes de navegar
       setTimeout(() => {
         this.router.navigate(['/metodologias']);

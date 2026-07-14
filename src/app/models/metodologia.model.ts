@@ -10,8 +10,14 @@ export interface Embalagem {
   preservante: string;
 }
 
+export interface RecursoMetodologia {
+  nome: string;
+  quantidade: number;
+}
+
 export interface MetodologiaModel {
   id: string;
+  status: 'Ativo' | 'Inativo';
   codigo: string;
   nome: string;
   norma: string;
@@ -21,4 +27,6 @@ export interface MetodologiaModel {
   obsoleto: boolean;
   analises?: AnaliseModel[];
   embalagens?: Embalagem[];
+  equipamentos?: RecursoMetodologia[];
+  reagentes?: RecursoMetodologia[];
 }

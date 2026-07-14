@@ -3,6 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
 import { ItemPrecoResponseModel, TipoItemPreco } from '@/models/item-preco.model';
 import { ItensPrecoService } from 'src/services/itens-preco.service';
 
@@ -23,12 +26,15 @@ interface PaginatedResult {
 @Component({
   selector: 'app-itens-preco-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })
 export class ItensPrecoList {
   private fb = inject(FormBuilder);
   private itensPrecoService = inject(ItensPrecoService);
+  private messageService = inject(MessageService);
+  private confirmationService = inject(ConfirmationService);
 
   filtrosForm = this.fb.group({
     search: [''],
@@ -120,8 +126,37 @@ export class ItensPrecoList {
     return Array.from({ length: count }, (_, index) => index + 1);
   }
 
-  removerItemPreco(id: string): void {
-    this.itensPrecoService.removeItemPreco(id).subscribe(() => this.setPage(1));
+  alternarStatus(item: ItemPrecoResponseModel): void {
+    const inativando = item.status === 'Ativo';
+    this.confirmationService.confirm({
+      message: `Deseja realmente ${inativando ? 'inativar' : 'ativar'} "${item.identificacao}"?`,
+      header: 'Confirmar',
+      icon: 'pi pi-exclamation-triangle',
+      acceptLabel: inativando ? 'Sim, inativar' : 'Sim, ativar',
+      rejectLabel: 'Cancelar',
+      accept: () => {
+        const operacao = inativando
+          ? this.itensPrecoService.inativar(item.id)
+          : this.itensPrecoService.ativar(item.id);
+
+        operacao.subscribe({
+          next: () => {
+            this.messageService.add({
+              severity: 'success',
+              summary: 'Sucesso',
+              detail: `Item de preço ${inativando ? 'inativado' : 'ativado'} com sucesso.`,
+            });
+          },
+          error: () => {
+            this.messageService.add({
+              severity: 'error',
+              summary: 'Erro',
+              detail: `Não foi possível ${inativando ? 'inativar' : 'ativar'} o item de preço.`,
+            });
+          },
+        });
+      },
+    });
   }
 
   getTipoBadgeClass(tipo: TipoItemPreco): string {
