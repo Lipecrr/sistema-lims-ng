@@ -172,6 +172,19 @@
             </label>
           </div>
 
+          <div class="grid gap-4 sm:grid-cols-2">
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              <span>Telefone <span class="text-red-600">*</span></span>
+              <input type="text" formControlName="telefone" maxlength="15" (input)="formatTelefone($event)" placeholder="(11) 99999-9999"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+            </label>
+            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
+              <span>E-mail de Faturamento <span class="text-red-600">*</span></span>
+              <input type="email" formControlName="emailFaturamento" placeholder="financeiro@empresa.com"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+            </label>
+          </div>
+
           <div class="border-t border-[#e5e7eb] pt-6">
             <h3 class="text-lg font-semibold text-[#1a1a1a] mb-4">Contatos</h3>
             
