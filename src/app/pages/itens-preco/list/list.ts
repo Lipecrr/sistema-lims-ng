@@ -121,8 +121,7 @@ export class ItensPrecoList {
   }
 
   removerItemPreco(id: string): void {
-    this.itensPrecoService.removeItemPreco(id);
-    this.setPage(1);
+    this.itensPrecoService.removeItemPreco(id).subscribe(() => this.setPage(1));
   }
 
   getTipoBadgeClass(tipo: TipoItemPreco): string {

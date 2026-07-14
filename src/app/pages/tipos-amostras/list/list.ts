@@ -1,4 +1,4 @@
-﻿import { Component, inject } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
@@ -23,8 +23,7 @@ export class List {
   private readonly service = inject(TiposAmostrasService);
 
   constructor() {
-    this.tiposAmostras = this.service.getTiposAmostras();
-    this.applyFilters();
+    this.carregar();
   }
 
   filtrar(): void {
@@ -38,9 +37,14 @@ export class List {
   }
 
   removerTipo(id: string): void {
-    this.service.deleteTipoAmostra(id);
-    this.tiposAmostras = this.service.getTiposAmostras();
-    this.applyFilters();
+    this.service.deleteTipoAmostra(id).subscribe(() => this.carregar());
+  }
+
+  private carregar(): void {
+    this.service.fetchTiposAmostras().subscribe((tipos) => {
+      this.tiposAmostras = tipos;
+      this.applyFilters();
+    });
   }
 
   private applyFilters(): void {

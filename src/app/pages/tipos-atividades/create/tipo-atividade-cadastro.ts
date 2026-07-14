@@ -88,17 +88,21 @@ export class TipoAtividadeCadastro implements OnInit {
       return;
     }
 
-    const payload: TipoAtividadeModel = {
-      id: this.formAtividade.get('id')?.value,
+    const payload: Omit<TipoAtividadeModel, 'id'> = {
       versao: this.formAtividade.get('versao')?.value,
       tipo: this.formAtividade.get('tipo')?.value,
       fluxoEtapas: this.fluxoEtapas,
       informacoes: this.informacoes,
     };
 
-    this.service.addTipoAtividade(payload);
-    console.log('Salvar Tipo de Atividade:', payload);
-    alert('Tipo de atividade salvo com sucesso.');
-    this.router.navigate(['/tipos-atividades']);
+    this.service.addTipoAtividade(payload).subscribe({
+      next: () => {
+        alert('Tipo de atividade salvo com sucesso.');
+        this.router.navigate(['/tipos-atividades']);
+      },
+      error: () => {
+        alert('Não foi possível salvar o tipo de atividade. Tente novamente.');
+      },
+    });
   }
 }

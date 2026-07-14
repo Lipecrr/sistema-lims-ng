@@ -1,73 +1,106 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, delay } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, firstValueFrom, map, shareReplay, switchMap, tap } from 'rxjs';
 import type { ClienteResponseModel } from '@/models/cliente.model';
+import { environment } from '../environment/environment';
+
+const API_URL = `${environment.apiUrl}/api/v1/clientes`;
+
+export interface ClienteContatoApi {
+  tipo: 'telefone' | 'email';
+  setor: 'compras' | 'financeiro' | 'tecnico';
+  valor: string;
+}
+
+export interface ClienteApi {
+  id: string;
+  status: 'ATIVO' | 'INATIVO';
+  tipo_pessoa: 'PJ' | 'PF';
+  razao_social: string | null;
+  nome_fantasia: string | null;
+  cnpj: string | null;
+  inscricao_estadual: string | null;
+  segmento: string | null;
+  nome_completo: string | null;
+  cpf: string | null;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  cidade: string;
+  estado: string;
+  telefone: string;
+  email_faturamento: string;
+  contratos_ativos: number;
+  inadimplente: boolean;
+  contatos: ClienteContatoApi[];
+}
+
+export interface CriarClienteApiPayload {
+  status?: string;
+  tipo_pessoa: 'PJ' | 'PF';
+  razao_social?: string | null;
+  nome_fantasia?: string | null;
+  cnpj?: string | null;
+  inscricao_estadual?: string | null;
+  segmento?: string | null;
+  nome_completo?: string | null;
+  cpf?: string | null;
+  cep: string;
+  logradouro: string;
+  numero: string;
+  cidade: string;
+  estado: string;
+  telefone: string;
+  email_faturamento: string;
+  contratos_ativos?: number;
+  inadimplente?: boolean;
+  contatos: ClienteContatoApi[];
+}
+
+function paraModel(item: ClienteApi): ClienteResponseModel {
+  return {
+    id: item.id,
+    nome_empresa_nome_pf: item.tipo_pessoa === 'PJ' ? (item.razao_social ?? '') : (item.nome_completo ?? ''),
+    cnpj_cpf: item.tipo_pessoa === 'PJ' ? (item.cnpj ?? '') : (item.cpf ?? ''),
+    contratos_ativos: item.contratos_ativos,
+    contato_principal: item.telefone || item.email_faturamento,
+    inadimplente: item.inadimplente,
+  };
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ClientesService {
-  private readonly initialData: ClienteResponseModel[] = [
-    {
-      id: 'CLI-001',
-      nome_empresa_nome_pf: 'Indústria Química Brasil Ltda',
-      cnpj_cpf: '12.345.678/0001-90',
-      contratos_ativos: 3,
-      contato_principal: 'João Silva (11) 98765-4321',
-      inadimplente: false,
-    },
-    {
-      id: 'CLI-002',
-      nome_empresa_nome_pf: 'Agropecuária Verde Campo S.A.',
-      cnpj_cpf: '23.456.789/0001-01',
-      contratos_ativos: 5,
-      contato_principal: 'Maria Souza (21) 99876-5432',
-      inadimplente: true,
-    },
-    {
-      id: 'CLI-003',
-      nome_empresa_nome_pf: 'Engenharia Ambiental Santos',
-      cnpj_cpf: '34.567.890/0001-12',
-      contratos_ativos: 2,
-      contato_principal: 'Carlos Santos (31) 98765-1234',
-      inadimplente: false,
-    },
-    {
-      id: 'CLI-004',
-      nome_empresa_nome_pf: 'Consultoria Alimentos Seguros',
-      cnpj_cpf: '45.678.901/0001-23',
-      contratos_ativos: 1,
-      contato_principal: 'Ana Pereira (41) 99988-7766',
-      inadimplente: false,
-    },
-  ];
+  private http = inject(HttpClient);
+  private readonly reloadSubject = new BehaviorSubject<void>(undefined);
 
-  private readonly clientesSubject = new BehaviorSubject<ClienteResponseModel[]>(this.initialData);
+  private readonly clientesApi$ = this.reloadSubject.pipe(
+    switchMap(() => this.http.get<ClienteApi[]>(API_URL)),
+    shareReplay(1)
+  );
 
   get clientes$(): Observable<ClienteResponseModel[]> {
-    return this.clientesSubject.asObservable();
+    return this.clientesApi$.pipe(map((itens) => itens.map(paraModel)));
   }
 
   fetchClientes(): Observable<ClienteResponseModel[]> {
-    return this.clientes$.pipe(delay(120));
+    return this.clientes$;
   }
 
-  getClienteById(id: string): ClienteResponseModel | undefined {
-    return this.clientesSubject.value.find((item) => item.id === id);
+  getClienteById(id: string): Observable<ClienteApi> {
+    return this.http.get<ClienteApi>(`${API_URL}/${id}`);
   }
 
-  addCliente(cliente: ClienteResponseModel): void {
-    this.clientesSubject.next([...this.clientesSubject.value, cliente]);
+  async addCliente(payload: CriarClienteApiPayload): Promise<ClienteResponseModel> {
+    const criado = await firstValueFrom(this.http.post<ClienteApi>(API_URL, payload));
+    this.reloadSubject.next();
+    return paraModel(criado);
   }
 
-  updateCliente(cliente: ClienteResponseModel): void {
-    const updated = this.clientesSubject.value.map((item) =>
-      item.id === cliente.id ? cliente : item
+  deleteCliente(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/${id}`).pipe(
+      tap(() => this.reloadSubject.next())
     );
-    this.clientesSubject.next(updated);
-  }
-
-  deleteCliente(id: string): void {
-    const updated = this.clientesSubject.value.filter((item) => item.id !== id);
-    this.clientesSubject.next(updated);
   }
 }

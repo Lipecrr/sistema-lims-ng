@@ -5,6 +5,7 @@ import { Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { ClientesService } from 'src/services/clientes.service';
 
 type TipoPessoa = 'PJ' | 'PF';
 type AbaAtiva = 'informacoes' | 'endereco';
@@ -83,7 +84,8 @@ export class ClienteCadastro implements OnInit {
     private fb: FormBuilder,
     private router: Router,
     private messageService: MessageService,
-    private confirmationService: ConfirmationService
+    private confirmationService: ConfirmationService,
+    private clientesService: ClientesService
   ) {}
 
   ngOnInit() {
@@ -307,7 +309,7 @@ export class ClienteCadastro implements OnInit {
     });
   }
 
-  salvar() {
+  async salvar() {
     if (this.clienteForm.invalid) {
       this.clienteForm.markAllAsTouched();
       this.messageService.add({
@@ -318,14 +320,43 @@ export class ClienteCadastro implements OnInit {
       return;
     }
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Cliente cadastrado com sucesso!',
-    });
+    const valores = this.clienteForm.getRawValue();
 
-    setTimeout(() => {
-      this.router.navigate(['/clientes']);
-    }, 1500);
+    try {
+      await this.clientesService.addCliente({
+        tipo_pessoa: this.tipoPessoa,
+        razao_social: this.tipoPessoa === 'PJ' ? valores.razaoSocial : null,
+        nome_fantasia: this.tipoPessoa === 'PJ' ? valores.nomeFantasia : null,
+        cnpj: this.tipoPessoa === 'PJ' ? valores.cnpj : null,
+        inscricao_estadual: this.tipoPessoa === 'PJ' ? valores.inscricaoEstadual : null,
+        segmento: this.tipoPessoa === 'PJ' ? valores.segmento : null,
+        nome_completo: this.tipoPessoa === 'PF' ? valores.nomeCompleto : null,
+        cpf: this.tipoPessoa === 'PF' ? valores.cpf : null,
+        cep: valores.cep!,
+        logradouro: valores.logradouro!,
+        numero: valores.numero!,
+        cidade: valores.cidade!,
+        estado: valores.estado!,
+        telefone: valores.telefone!,
+        email_faturamento: valores.emailFaturamento!,
+        contatos: this.contatos,
+      });
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Cliente cadastrado com sucesso!',
+      });
+
+      setTimeout(() => {
+        this.router.navigate(['/clientes']);
+      }, 1500);
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Não foi possível cadastrar o cliente. Tente novamente.',
+      });
+    }
   }
 }

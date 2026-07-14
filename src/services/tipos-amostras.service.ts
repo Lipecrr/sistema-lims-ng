@@ -1,65 +1,74 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap } from 'rxjs';
 import { TipoAmostraResponseModel } from '@/models/tipo-amostra.model';
+import { environment } from '../environment/environment';
+
+const API_URL = `${environment.apiUrl}/api/v1/tipos-amostras`;
+
+interface TipoAmostraApi {
+  id: string;
+  status: 'ATIVO' | 'INATIVO';
+  tipo: string;
+  motivo: TipoAmostraResponseModel['motivo'];
+  publicacao_manual: boolean;
+  obrigar_data_coleta: boolean;
+  observacoes?: string | null;
+}
+
+function paraModel(item: TipoAmostraApi): TipoAmostraResponseModel {
+  return {
+    id: item.id,
+    tipo: item.tipo,
+    motivo: item.motivo,
+    publicacaoManual: item.publicacao_manual,
+    obrigarDataColeta: item.obrigar_data_coleta,
+    status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
+    observacoes: item.observacoes ?? undefined,
+  };
+}
+
+function paraApiRequest(item: Omit<TipoAmostraResponseModel, 'id'>) {
+  return {
+    status: item.status === 'Ativo' ? 'ATIVO' : 'INATIVO',
+    tipo: item.tipo,
+    motivo: item.motivo,
+    publicacao_manual: item.publicacaoManual,
+    obrigar_data_coleta: item.obrigarDataColeta,
+    observacoes: item.observacoes ?? null,
+  };
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class TiposAmostrasService {
-  private readonly initialData: TipoAmostraResponseModel[] = [
-    {
-      id: '1',
-      tipo: 'Água Potável',
-      motivo: 'Rotina',
-      publicacaoManual: false,
-      obrigarDataColeta: true,
-      status: 'Ativo',
-      observacoes: 'Amostra de rotina para análise de potabilidade',
-    },
-    {
-      id: '2',
-      tipo: 'Solo Contaminado',
-      motivo: 'Controle de Qualidade',
-      publicacaoManual: true,
-      obrigarDataColeta: false,
-      status: 'Ativo',
-      observacoes: 'Coleta com publicação manual de parâmetro interno',
-    },
-    {
-      id: '3',
-      tipo: 'Efluente Industrial',
-      motivo: 'Prioritária (Rush)',
-      publicacaoManual: false,
-      obrigarDataColeta: true,
-      status: 'Inativo',
-      observacoes: 'Amostra de rush para análise de descarga',
-    },
-    {
-      id: '4',
-      tipo: 'Água de Processo',
-      motivo: 'Rotina',
-      publicacaoManual: false,
-      obrigarDataColeta: false,
-      status: 'Ativo',
-      observacoes: 'Monitoramento de qualidade de processo',
-    },
-  ];
+  private http = inject(HttpClient);
+  private readonly reloadSubject = new BehaviorSubject<void>(undefined);
 
-  private readonly tiposSubject = new BehaviorSubject<TipoAmostraResponseModel[]>(this.initialData);
+  private readonly tiposAmostras$ = this.reloadSubject.pipe(
+    switchMap(() => this.http.get<TipoAmostraApi[]>(API_URL)),
+    shareReplay(1)
+  );
 
   get tipos$(): Observable<TipoAmostraResponseModel[]> {
-    return this.tiposSubject.asObservable();
+    return this.tiposAmostras$.pipe(map((itens) => itens.map(paraModel)));
   }
 
-  getTiposAmostras(): TipoAmostraResponseModel[] {
-    return this.tiposSubject.value;
+  fetchTiposAmostras(): Observable<TipoAmostraResponseModel[]> {
+    return this.tipos$;
   }
 
-  addTipoAmostra(tipoAmostra: TipoAmostraResponseModel): void {
-    this.tiposSubject.next([...this.tiposSubject.value, tipoAmostra]);
+  addTipoAmostra(tipoAmostra: Omit<TipoAmostraResponseModel, 'id'>): Observable<TipoAmostraResponseModel> {
+    return this.http.post<TipoAmostraApi>(API_URL, paraApiRequest(tipoAmostra)).pipe(
+      tap(() => this.reloadSubject.next()),
+      map(paraModel)
+    );
   }
 
-  deleteTipoAmostra(id: string): void {
-    this.tiposSubject.next(this.tiposSubject.value.filter((item) => item.id !== id));
+  deleteTipoAmostra(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/${id}`).pipe(
+      tap(() => this.reloadSubject.next())
+    );
   }
 }

@@ -1,69 +1,84 @@
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, delay } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { BehaviorSubject, Observable, firstValueFrom, map, shareReplay, switchMap, tap } from 'rxjs';
 import type { ColaboradorResponseModel } from '@/models/colaborador.model';
+import { environment } from '../environment/environment';
+
+const API_URL = `${environment.apiUrl}/api/v1/colaboradores`;
+
+export interface ColaboradorApi {
+  id: string;
+  status: 'ATIVO' | 'INATIVO';
+  nome_completo: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  cargo: string;
+  departamento: string;
+  matricula: string;
+  permissao: 'leitura' | 'operacional' | 'gestao' | 'administrador';
+  acesso_login: string;
+  foto_url: string | null;
+  enviar_email: boolean;
+  forcar_troca_senha: boolean;
+}
+
+export interface CriarColaboradorApiPayload {
+  status?: string;
+  nome_completo: string;
+  cpf: string;
+  email: string;
+  telefone: string;
+  cargo: string;
+  departamento: string;
+  matricula: string;
+  permissao: string;
+  acesso_login: string;
+  senha_temporaria?: string | null;
+  foto_url?: string | null;
+  enviar_email: boolean;
+  forcar_troca_senha: boolean;
+}
+
+function paraModel(item: ColaboradorApi): ColaboradorResponseModel {
+  return {
+    id: item.id,
+    nome: item.nome_completo,
+    cargo: item.cargo,
+    departamento: item.departamento,
+    status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
+  };
+}
 
 @Injectable({
   providedIn: 'root',
 })
 export class ColaboradoresService {
-  private readonly initialData: ColaboradorResponseModel[] = [
-    {
-      id: 'COL-001',
-      nome: 'Dr. Ana Silva',
-      cargo: 'Química Analítica',
-      departamento: 'Físico-Química',
-      status: 'ativo',
-    },
-    {
-      id: 'COL-002',
-      nome: 'Carlos Mendes',
-      cargo: 'Técnico de Laboratório',
-      departamento: 'Microbiologia',
-      status: 'ativo',
-    },
-    {
-      id: 'COL-003',
-      nome: 'Mariana Costa',
-      cargo: 'Biologa',
-      departamento: 'Biologia Molecular',
-      status: 'inativo',
-    },
-    {
-      id: 'COL-004',
-      nome: 'Roberto Almeida',
-      cargo: 'Supervisor de Análises',
-      departamento: 'Físico-Química',
-      status: 'ativo',
-    },
-  ];
+  private http = inject(HttpClient);
+  private readonly reloadSubject = new BehaviorSubject<void>(undefined);
 
-  private readonly colaboradoresSubject = new BehaviorSubject<ColaboradorResponseModel[]>(this.initialData);
+  private readonly colaboradoresApi$ = this.reloadSubject.pipe(
+    switchMap(() => this.http.get<ColaboradorApi[]>(API_URL)),
+    shareReplay(1)
+  );
 
   get colaboradores$(): Observable<ColaboradorResponseModel[]> {
-    return this.colaboradoresSubject.asObservable();
+    return this.colaboradoresApi$.pipe(map((itens) => itens.map(paraModel)));
   }
 
   fetchColaboradores(): Observable<ColaboradorResponseModel[]> {
-    return this.colaboradores$.pipe(delay(120));
+    return this.colaboradores$;
   }
 
-  getColaboradorById(id: string): ColaboradorResponseModel | undefined {
-    return this.colaboradoresSubject.value.find((item) => item.id === id);
+  async addColaborador(payload: CriarColaboradorApiPayload): Promise<ColaboradorResponseModel> {
+    const criado = await firstValueFrom(this.http.post<ColaboradorApi>(API_URL, payload));
+    this.reloadSubject.next();
+    return paraModel(criado);
   }
 
-  addColaborador(colaborador: ColaboradorResponseModel): void {
-    this.colaboradoresSubject.next([...this.colaboradoresSubject.value, colaborador]);
-  }
-
-  updateColaborador(colaborador: ColaboradorResponseModel): void {
-    const updated = this.colaboradoresSubject.value.map((item) =>
-      item.id === colaborador.id ? colaborador : item
+  deleteColaborador(id: string): Observable<void> {
+    return this.http.delete<void>(`${API_URL}/${id}`).pipe(
+      tap(() => this.reloadSubject.next())
     );
-    this.colaboradoresSubject.next(updated);
-  }
-
-  deleteColaborador(id: string): void {
-    const updated = this.colaboradoresSubject.value.filter((item) => item.id !== id);
-    this.colaboradoresSubject.next(updated);
   }
 }

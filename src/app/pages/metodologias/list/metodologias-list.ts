@@ -153,7 +153,6 @@ export class MetodologiasList {
   }
 
   removerMetodologia(id: string): void {
-    this.service.deleteMetodologia(id);
-    this.setPage(1);
+    this.service.deleteMetodologia(id).subscribe(() => this.setPage(1));
   }
 }

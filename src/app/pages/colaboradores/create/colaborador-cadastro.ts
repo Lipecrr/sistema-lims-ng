@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, FormsModule, A
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { ColaboradoresService } from 'src/services/colaboradores.service';
 
 @Component({
   selector: 'app-colaborador-cadastro',
@@ -26,7 +27,12 @@ export class ColaboradorCadastro implements OnInit {
   fotoPreview: string | null = null;
   isDragging = false;
 
-  constructor(private fb: FormBuilder, private messageService: MessageService, private confirmationService: ConfirmationService) {}
+  constructor(
+    private fb: FormBuilder,
+    private messageService: MessageService,
+    private confirmationService: ConfirmationService,
+    private colaboradoresService: ColaboradoresService
+  ) {}
 
   ngOnInit() {
     this.formColaborador = this.fb.group({
@@ -174,11 +180,36 @@ export class ColaboradorCadastro implements OnInit {
       return;
     }
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Colaborador salvo com sucesso.'
-    });
+    const valores = this.formColaborador.getRawValue();
+
+    try {
+      await this.colaboradoresService.addColaborador({
+        nome_completo: valores.nomeCompleto,
+        cpf: valores.cpf,
+        email: valores.email,
+        telefone: valores.telefone,
+        cargo: valores.cargo,
+        departamento: valores.departamento,
+        matricula: valores.matricula,
+        permissao: valores.permissao,
+        acesso_login: valores.acessoLogin,
+        senha_temporaria: valores.senhaTemporaria || null,
+        enviar_email: valores.enviarEmail,
+        forcar_troca_senha: valores.forcarTrocaSenha,
+      });
+
+      this.messageService.add({
+        severity: 'success',
+        summary: 'Sucesso',
+        detail: 'Colaborador salvo com sucesso.'
+      });
+    } catch {
+      this.messageService.add({
+        severity: 'error',
+        summary: 'Erro',
+        detail: 'Não foi possível salvar o colaborador. Tente novamente.'
+      });
+    }
   }
 
   descartar() {

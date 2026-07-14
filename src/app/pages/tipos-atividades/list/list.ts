@@ -14,6 +14,6 @@ export class List {
   tipos$ = this.service.tipos$;
 
   removerTipo(id: string): void {
-    this.service.deleteTipoAtividade(id);
+    this.service.deleteTipoAtividade(id).subscribe();
   }
 }

@@ -44,12 +44,14 @@ export class TipoAmostraCadastro implements OnInit {
       return;
     }
 
-    this.service.addTipoAmostra({
-      id: Date.now().toString(),
-      ...this.formAmostra.getRawValue(),
+    this.service.addTipoAmostra(this.formAmostra.getRawValue()).subscribe({
+      next: () => {
+        alert('Tipo de amostra cadastrado com sucesso.');
+        this.router.navigate(['/tipos-amostras']);
+      },
+      error: () => {
+        alert('Não foi possível cadastrar o tipo de amostra. Tente novamente.');
+      },
     });
-
-    alert('Tipo de amostra cadastrado com sucesso.');
-    this.router.navigate(['/tipos-amostras']);
   }
 }

@@ -102,16 +102,25 @@ export class ItemPrecoCadastro implements OnInit {
       identificacao: this.itemPrecoForm.value.identificacao,
       preco: this.itemPrecoForm.value.preco,
       tipo: this.itemPrecoForm.value.tipo,
-    });
+    }).subscribe({
+      next: () => {
+        this.messageService.add({
+          severity: 'success',
+          summary: 'Sucesso',
+          detail: 'Item de preço cadastrado com sucesso!',
+        });
 
-    this.messageService.add({
-      severity: 'success',
-      summary: 'Sucesso',
-      detail: 'Item de preço cadastrado com sucesso!',
+        setTimeout(() => {
+          this.router.navigate(['/itens-preco']);
+        }, 1500);
+      },
+      error: () => {
+        this.messageService.add({
+          severity: 'error',
+          summary: 'Erro',
+          detail: 'Não foi possível cadastrar o item de preço. Tente novamente.',
+        });
+      },
     });
-
-    setTimeout(() => {
-      this.router.navigate(['/itens-preco']);
-    }, 1500);
   }
 }

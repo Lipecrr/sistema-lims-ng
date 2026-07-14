@@ -2,8 +2,9 @@ import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
-import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
+import { combineLatest, map, Observable, BehaviorSubject } from 'rxjs';
 import { ClienteResponseModel } from '@/models/cliente.model';
+import { ClientesService } from 'src/services/clientes.service';
 
 interface ClienteFilter {
   search: string;
@@ -27,64 +28,7 @@ interface PaginatedResult {
 })
 export class List {
   private fb = inject(FormBuilder);
-  private clientesSubject = new BehaviorSubject<ClienteResponseModel[]>([
-    {
-      id: 'f47ac10b-58cc-4372-a567-0e02b2c3d479',
-      nome_empresa_nome_pf: 'Tech Solutions Ltda',
-      cnpj_cpf: '12.345.678/0001-90',
-      contratos_ativos: 5,
-      contato_principal: 'ana.silva@techsolutions.com',
-      inadimplente: false,
-    },
-    {
-      id: '550e8400-e29b-41d4-a716-446655440000',
-      nome_empresa_nome_pf: 'Inova Consultoria',
-      cnpj_cpf: '98.765.432/0001-10',
-      contratos_ativos: 3,
-      contato_principal: 'joao.pereira@inovac.com',
-      inadimplente: false,
-    },
-    {
-      id: '6fa459ea-ee8a-3ca4-894e-db77e160355e',
-      nome_empresa_nome_pf: 'Alpha Engenharia',
-      cnpj_cpf: '23.456.789/0001-20',
-      contratos_ativos: 8,
-      contato_principal: 'carla.melo@alphaeng.com',
-      inadimplente: true,
-    },
-    {
-      id: '123e4567-e89b-12d3-a456-426614174000',
-      nome_empresa_nome_pf: 'Green Energy S.A.',
-      cnpj_cpf: '34.567.890/0001-30',
-      contratos_ativos: 2,
-      contato_principal: 'marcos.rodrigues@greenenergy.com',
-      inadimplente: false,
-    },
-    {
-      id: '9c858901-8a57-4791-81fe-4c455b099bc9',
-      nome_empresa_nome_pf: 'BlueTech Serviços',
-      cnpj_cpf: '45.678.901/0001-40',
-      contratos_ativos: 6,
-      contato_principal: 'lucia.santos@bluetech.com',
-      inadimplente: true,
-    },
-    {
-      id: '16fd2706-8baf-433b-82eb-8c7fada847da',
-      nome_empresa_nome_pf: 'Carlos Eduardo',
-      cnpj_cpf: '123.456.789-00',
-      contratos_ativos: 1,
-      contato_principal: 'carlos.eduardo@email.com',
-      inadimplente: false,
-    },
-    {
-      id: '7d444840-9dc0-11d1-b245-5ffdce74fad2',
-      nome_empresa_nome_pf: 'Maria Oliveira',
-      cnpj_cpf: '987.654.321-11',
-      contratos_ativos: 4,
-      contato_principal: 'maria.oliveira@email.com',
-      inadimplente: false,
-    },
-  ]);
+  private clientesService = inject(ClientesService);
 
   filtrosForm = this.fb.group({
     search: [''],
@@ -95,7 +39,7 @@ export class List {
   private pageSubject = new BehaviorSubject<number>(1);
   pageSize = 6;
 
-  public readonly filteredClientes$ = combineLatest([this.clientesSubject.asObservable(), this.filterSubject]).pipe(
+  public readonly filteredClientes$ = combineLatest([this.clientesService.clientes$, this.filterSubject]).pipe(
     map(([items, filter]) => {
       return items.filter((cliente) => {
         const query = filter.search.trim().toLowerCase();
@@ -144,7 +88,7 @@ export class List {
     })
   );
 
-  public readonly resumo$ = this.clientesSubject.asObservable().pipe(
+  public readonly resumo$ = this.clientesService.clientes$.pipe(
     map((items) => ({
       total: items.length,
       contratos: items.reduce((sum, item) => sum + item.contratos_ativos, 0),
@@ -181,8 +125,6 @@ export class List {
   }
 
   removerCliente(id: string): void {
-    const updated = this.clientesSubject.value.filter((item) => item.id !== id);
-    this.clientesSubject.next(updated);
-    this.setPage(1);
+    this.clientesService.deleteCliente(id).subscribe(() => this.setPage(1));
   }
 }
