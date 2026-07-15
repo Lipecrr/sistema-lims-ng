@@ -5,7 +5,29 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
+import { Observable, map, startWith } from 'rxjs';
 import { ColaboradoresService } from 'src/services/colaboradores.service';
+
+export interface RequisitosSenha {
+  minLength: boolean;
+  temMaiuscula: boolean;
+  temMinuscula: boolean;
+  temNumero: boolean;
+}
+
+export function validarComplexidadeSenha(control: AbstractControl): ValidationErrors | null {
+  const valor = control.value;
+  if (!valor) {
+    return null; // vazio é permitido: senha é gerada automaticamente
+  }
+
+  const minLength = valor.length >= 6;
+  const temMaiuscula = /[A-Z]/.test(valor);
+  const temMinuscula = /[a-z]/.test(valor);
+  const temNumero = /[0-9]/.test(valor);
+
+  return minLength && temMaiuscula && temMinuscula && temNumero ? null : { senhaFraca: true };
+}
 
 @Component({
   selector: 'app-colaborador-cadastro',
@@ -30,6 +52,8 @@ export class ColaboradorCadastro implements OnInit {
 
   id: string | null = null;
   modoVisualizacao = false;
+
+  requisitosSenha$!: Observable<RequisitosSenha>;
 
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
@@ -57,11 +81,21 @@ export class ColaboradorCadastro implements OnInit {
       matricula: ['', Validators.required],
       permissao: ['', Validators.required],
       acessoLogin: ['', Validators.required],
-      senhaTemporaria: [''],
+      senhaTemporaria: ['', validarComplexidadeSenha],
       confirmarSenha: [''],
       enviarEmail: [true],
       forcarTrocaSenha: [true],
     }, { validators: this.validarSenhas });
+
+    this.requisitosSenha$ = this.formColaborador.get('senhaTemporaria')!.valueChanges.pipe(
+      startWith(''),
+      map((senha: string | null) => ({
+        minLength: (senha?.length ?? 0) >= 6,
+        temMaiuscula: /[A-Z]/.test(senha ?? ''),
+        temMinuscula: /[a-z]/.test(senha ?? ''),
+        temNumero: /[0-9]/.test(senha ?? ''),
+      }))
+    );
 
     this.id = this.route.snapshot.paramMap.get('id');
     this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';

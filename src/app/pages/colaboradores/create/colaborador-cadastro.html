@@ -254,7 +254,26 @@
               Senha temporária
               <input type="password" formControlName="senhaTemporaria"
                 class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-              <span class="text-xs text-slate-500">Deixe em branco para gerar automaticamente.</span>
+              <span class="text-xs text-slate-500">Deixe em branco para gerar automaticamente. Se preenchida, deve ter no mínimo 6 caracteres, com letra maiúscula, minúscula e número.</span>
+              <ul *ngIf="requisitosSenha$ | async as req" class="mt-1 space-y-1 text-xs font-normal">
+                <li class="flex items-center gap-1.5" [class.text-emerald-600]="req.minLength" [class.text-slate-400]="!req.minLength">
+                  <i [class]="req.minLength ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                  Mínimo de 6 caracteres
+                </li>
+                <li class="flex items-center gap-1.5" [class.text-emerald-600]="req.temMaiuscula" [class.text-slate-400]="!req.temMaiuscula">
+                  <i [class]="req.temMaiuscula ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                  Pelo menos 1 letra maiúscula
+                </li>
+                <li class="flex items-center gap-1.5" [class.text-emerald-600]="req.temMinuscula" [class.text-slate-400]="!req.temMinuscula">
+                  <i [class]="req.temMinuscula ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                  Pelo menos 1 letra minúscula
+                </li>
+                <li class="flex items-center gap-1.5" [class.text-emerald-600]="req.temNumero" [class.text-slate-400]="!req.temNumero">
+                  <i [class]="req.temNumero ? 'pi pi-check-circle' : 'pi pi-circle'"></i>
+                  Pelo menos 1 número
+                </li>
+              </ul>
+              <span *ngIf="controle['senhaTemporaria'].touched && controle['senhaTemporaria'].hasError('senhaFraca')" class="text-xs text-red-600">A senha não atende aos requisitos acima.</span>
             </label>
             <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
               Confirmar Senha
