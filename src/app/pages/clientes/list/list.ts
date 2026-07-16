@@ -8,6 +8,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ClienteResponseModel } from '@/models/cliente.model';
 import { ClientesService } from 'src/services/clientes.service';
+import { ResgistroStatusTag } from '@/core/components/registro-status-tag/registro-status-tag';
 
 interface ClienteFilter {
   search: string;
@@ -26,7 +27,7 @@ interface PaginatedResult {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule, ResgistroStatusTag],
   providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })

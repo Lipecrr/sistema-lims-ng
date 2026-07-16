@@ -7,12 +7,12 @@ import { environment } from '../environment/environment';
 const API_URL = `${environment.apiUrl}/api/v1/tipos-atividades`;
 
 interface TipoAtividadeApi {
-  id: string;
+  id: number;
   status: 'ATIVO' | 'INATIVO';
   versao: number;
   tipo: string;
   fluxo_etapas: InformacaoAtividadeModel['etapa'][];
-  informacoes: { id: string; etapa: InformacaoAtividadeModel['etapa']; informacao: InformacaoAtividadeModel['informacao'] }[];
+  informacoes: { id: number; etapa: InformacaoAtividadeModel['etapa']; informacao: InformacaoAtividadeModel['informacao'] }[];
 }
 
 function paraModel(item: TipoAtividadeApi): TipoAtividadeModel {
@@ -57,7 +57,7 @@ export class TiposAtividadesService {
     return this.tiposAtividades$;
   }
 
-  obterPorId(id: string): Observable<TipoAtividadeModel> {
+  obterPorId(id: string | number): Observable<TipoAtividadeModel> {
     return this.http.get<TipoAtividadeApi>(`${API_URL}/${id}`).pipe(map(paraModel));
   }
 
@@ -68,7 +68,7 @@ export class TiposAtividadesService {
     );
   }
 
-  atualizar(id: string, tipoAtividade: Omit<TipoAtividadeModel, 'id' | 'status'>): Observable<void> {
+  atualizar(id: string | number, tipoAtividade: Omit<TipoAtividadeModel, 'id' | 'status'>): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}`, {
       versao: tipoAtividade.versao,
       tipo: tipoAtividade.tipo,
@@ -79,19 +79,19 @@ export class TiposAtividadesService {
     );
   }
 
-  ativar(id: string): Observable<void> {
+  ativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  inativar(id: string): Observable<void> {
+  inativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  deleteTipoAtividade(id: string): Observable<void> {
+  deleteTipoAtividade(id: string | number): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${id}`).pipe(
       tap(() => this.reloadSubject.next())
     );

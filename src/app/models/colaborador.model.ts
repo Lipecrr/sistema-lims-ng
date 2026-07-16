@@ -1,7 +1,7 @@
 export interface ColaboradorResponseModel{
-    id: string;
+    id: number;
     nome: string;
     cargo: string;
     departamento: string;
-    status: string;
+    status: 'Ativo' | 'Inativo';
 }

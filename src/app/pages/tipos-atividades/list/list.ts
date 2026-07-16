@@ -6,11 +6,12 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { TipoAtividadeModel } from '@/models/tipo-atividade.model';
 import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
+import { ResgistroStatusTag } from '@/core/components/registro-status-tag/registro-status-tag';
 
 @Component({
   selector: 'app-tipos-atividades-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, RouterLink, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, RouterModule, RouterLink, ToastModule, ConfirmDialogModule, ResgistroStatusTag],
   providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })

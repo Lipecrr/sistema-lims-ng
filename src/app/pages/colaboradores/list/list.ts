@@ -8,6 +8,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ColaboradorResponseModel } from '@/models/colaborador.model';
 import { ColaboradoresService } from 'src/services/colaboradores.service';
+import { ResgistroStatusTag } from '@/core/components/registro-status-tag/registro-status-tag';
 
 interface ColaboradorFilter {
   search: string;
@@ -27,7 +28,7 @@ interface PaginatedResult {
 @Component({
   selector: 'app-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule, ResgistroStatusTag],
   providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })
@@ -91,16 +92,13 @@ export class List {
   public readonly resumo$ = this.colaboradoresService.colaboradores$.pipe(
     map((items) => ({
       ativos: items.filter((item) => item.status === 'Ativo').length,
-      ferias: items.filter((item) => item.status === 'Férias').length,
-      afastados: items.filter((item) => item.status === 'Afastado').length,
+      inativos: items.filter((item) => item.status === 'Inativo').length,
     }))
   );
 
   statusOptions = [
     { label: 'Todos', value: '' },
     { label: 'Ativo', value: 'Ativo' },
-    { label: 'Férias', value: 'Férias' },
-    { label: 'Afastado', value: 'Afastado' },
     { label: 'Inativo', value: 'Inativo' },
   ];
 
@@ -133,21 +131,6 @@ export class List {
 
   pageNumbers(count: number): number[] {
     return Array.from({ length: count }, (_, index) => index + 1);
-  }
-
-  badgeClass(status: string): string {
-    switch (status) {
-      case 'Ativo':
-        return 'bg-emerald-50 text-emerald-700 ring-emerald-200';
-      case 'Férias':
-        return 'bg-amber-50 text-amber-700 ring-amber-200';
-      case 'Afastado':
-        return 'bg-sky-50 text-sky-700 ring-sky-200';
-      case 'Inativo':
-        return 'bg-slate-100 text-slate-700 ring-slate-200';
-      default:
-        return 'bg-slate-100 text-slate-700 ring-slate-200';
-    }
   }
 
   alternarStatus(item: ColaboradorResponseModel): void {

@@ -82,19 +82,25 @@
           <table class="min-w-full border-separate border-spacing-0 text-sm">
             <thead class="bg-slate-50 text-slate-700">
               <tr>
+                <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">ID</th>
                 <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Nome</th>
                 <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">CNPJ/CPF</th>
                 <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Contratos Ativos</th>
                 <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Contato Principal</th>
+                <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Status</th>
                 <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
               <tr *ngFor="let cliente of page.items" class="border-b border-slate-100 last:border-none">
+                <td class="px-5 py-4 text-slate-500">{{ cliente.id }}</td>
                 <td class="px-5 py-4 font-medium text-slate-900">{{ cliente.nome_empresa_nome_pf }}</td>
                 <td class="px-5 py-4 text-slate-600">{{ cliente.cnpj_cpf }}</td>
                 <td class="px-5 py-4 text-slate-700">{{ cliente.contratos_ativos }}</td>
                 <td class="px-5 py-4 text-slate-700">{{ cliente.contato_principal }}</td>
+                <td class="px-5 py-4">
+                  <app-registro-status-tag [status]="cliente.status"></app-registro-status-tag>
+                </td>
                 <td class="px-5 py-4">
                   <div class="flex justify-end gap-2 text-slate-500">
                     <button type="button" [routerLink]="['/clientes', cliente.id]" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
@@ -110,7 +116,7 @@
                 </td>
               </tr>
               <tr *ngIf="page.items.length === 0">
-                <td colspan="5" class="px-5 py-10 text-center text-sm text-slate-500">Nenhum cliente encontrado para os filtros aplicados.</td>
+                <td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">Nenhum cliente encontrado para os filtros aplicados.</td>
               </tr>
             </tbody>
           </table>

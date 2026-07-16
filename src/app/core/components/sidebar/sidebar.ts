@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
+import { SidebarStateService } from '../../services/sidebar-state.service';
 
 @Component({
   selector: 'app-sidebar',
@@ -9,6 +10,13 @@ import { RouterLink, RouterLinkActive } from '@angular/router';
   templateUrl: './sidebar.html',
 })
 export class Sidebar {
+  private readonly sidebarState = inject(SidebarStateService);
+  readonly recolhida = this.sidebarState.recolhida;
+
+  alternarSidebar(): void {
+    this.sidebarState.alternar();
+  }
+
   navItems = [
     { label: 'Dashboard', icon: 'layout-grid', route: '/dashboard' },
     { label: 'Comercial', icon: 'briefcase', route: '/comercial' },

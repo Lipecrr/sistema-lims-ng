@@ -50,7 +50,7 @@ export class MetodologiaCadastroService {
     return paraModel(criado);
   }
 
-  async atualizar(id: string, data: any, codigoExistente: string, obsoletoExistente: boolean): Promise<void> {
+  async atualizar(id: string | number, data: any, codigoExistente: string, obsoletoExistente: boolean): Promise<void> {
     const payload = {
       codigo: codigoExistente,
       nome: data.nome,

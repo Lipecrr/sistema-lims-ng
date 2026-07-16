@@ -53,18 +53,19 @@
         <table class="min-w-full border-separate border-spacing-0 text-sm">
           <thead class="bg-slate-50 text-slate-700">
             <tr>
-              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">ID/Código</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">ID</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Nome da Metodologia</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Norma de Referência</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Setor</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Prazo de Conclusão</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Criticidade</th>
+              <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Status</th>
               <th class="whitespace-nowrap border-b border-slate-200 px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
             <tr *ngFor="let metodologia of page.items" class="border-b border-slate-100 last:border-none">
-              <td class="px-5 py-4 font-medium text-slate-900">{{ metodologia.codigo }}</td>
+              <td class="px-5 py-4 font-medium text-slate-900">{{ metodologia.id }}</td>
               <td class="px-5 py-4">{{ metodologia.nome }}</td>
               <td class="px-5 py-4 text-slate-600">{{ metodologia.norma }}</td>
               <td class="px-5 py-4 text-slate-700">{{ metodologia.setor }}</td>
@@ -73,6 +74,9 @@
                 <span [ngClass]="badgeClass(metodologia.criticidade)" class="inline-flex rounded-full border px-3 py-1 text-xs font-semibold ring-1">
                   {{ badgeLabel(metodologia.criticidade) }}
                 </span>
+              </td>
+              <td class="px-5 py-4">
+                <app-registro-status-tag [status]="metodologia.status"></app-registro-status-tag>
               </td>
               <td class="px-5 py-4">
                 <div class="flex justify-end gap-2 text-slate-500">
@@ -89,7 +93,7 @@
               </td>
             </tr>
             <tr *ngIf="page.items.length === 0">
-              <td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">Nenhuma metodologia encontrada para os filtros aplicados.</td>
+              <td colspan="8" class="px-5 py-10 text-center text-sm text-slate-500">Nenhuma metodologia encontrada para os filtros aplicados.</td>
             </tr>
           </tbody>
         </table>

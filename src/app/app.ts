@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { Sidebar } from './core/components/sidebar/sidebar';
+import { SidebarStateService } from './core/services/sidebar-state.service';
 
 @Component({
   selector: 'app-root',
@@ -10,4 +11,5 @@ import { Sidebar } from './core/components/sidebar/sidebar';
 })
 export class App {
   protected readonly title = signal('sistema-lims');
+  protected readonly sidebarState = inject(SidebarStateService);
 }

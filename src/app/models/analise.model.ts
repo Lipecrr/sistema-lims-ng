@@ -13,7 +13,7 @@ export type UnidadeMedida =
   | 'g/kg' | 'mg/dm³';
 
 export interface AnaliseModel {
-  id?: string;
+  id?: number;
   identificacao: string;
   tipoAmostra: TipoAmostra;
   unidadeMedida: UnidadeMedida;

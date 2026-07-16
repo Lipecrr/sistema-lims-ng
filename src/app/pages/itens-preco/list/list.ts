@@ -8,6 +8,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { ItemPrecoResponseModel, TipoItemPreco } from '@/models/item-preco.model';
 import { ItensPrecoService } from 'src/services/itens-preco.service';
+import { ResgistroStatusTag } from '@/core/components/registro-status-tag/registro-status-tag';
 
 interface ItemPrecoFilter {
   search: string;
@@ -26,7 +27,7 @@ interface PaginatedResult {
 @Component({
   selector: 'app-itens-preco-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, ToastModule, ConfirmDialogModule, ResgistroStatusTag],
   providers: [MessageService, ConfirmationService],
   templateUrl: './list.html',
 })

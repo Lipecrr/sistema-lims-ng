@@ -16,7 +16,7 @@ export interface RecursoMetodologia {
 }
 
 export interface MetodologiaModel {
-  id: string;
+  id: number;
   status: 'Ativo' | 'Inativo';
   codigo: string;
   nome: string;

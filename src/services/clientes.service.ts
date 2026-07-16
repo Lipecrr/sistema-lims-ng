@@ -13,7 +13,7 @@ export interface ClienteContatoApi {
 }
 
 export interface ClienteApi {
-  id: string;
+  id: number;
   status: 'ATIVO' | 'INATIVO';
   tipo_pessoa: 'PJ' | 'PF';
   razao_social: string | null;
@@ -89,7 +89,7 @@ export class ClientesService {
     return this.clientes$;
   }
 
-  getClienteById(id: string): Observable<ClienteApi> {
+  getClienteById(id: string | number): Observable<ClienteApi> {
     return this.http.get<ClienteApi>(`${API_URL}/${id}`);
   }
 
@@ -99,24 +99,24 @@ export class ClientesService {
     return paraModel(criado);
   }
 
-  async atualizar(id: string, payload: CriarClienteApiPayload): Promise<void> {
+  async atualizar(id: string | number, payload: CriarClienteApiPayload): Promise<void> {
     await firstValueFrom(this.http.put<void>(`${API_URL}/${id}`, payload));
     this.reloadSubject.next();
   }
 
-  ativar(id: string): Observable<void> {
+  ativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  inativar(id: string): Observable<void> {
+  inativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  deleteCliente(id: string): Observable<void> {
+  deleteCliente(id: string | number): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${id}`).pipe(
       tap(() => this.reloadSubject.next())
     );

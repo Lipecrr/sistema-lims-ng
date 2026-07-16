@@ -9,6 +9,7 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { MetodologiasListService } from 'src/services/metodologias-list.service';
 import { TempoEstimadoPipe } from './tempo-estimado.pipe';
 import { MetodologiaModel, CriticidadeNivel } from '../../../models/metodologia.model';
+import { ResgistroStatusTag } from '@/core/components/registro-status-tag/registro-status-tag';
 
 interface MetodologiaFilter {
   search: string;
@@ -28,7 +29,7 @@ interface PaginatedResult {
 @Component({
   selector: 'app-metodologias-list',
   standalone: true,
-  imports: [CommonModule, RouterModule, ReactiveFormsModule, TempoEstimadoPipe, ToastModule, ConfirmDialogModule],
+  imports: [CommonModule, RouterModule, ReactiveFormsModule, TempoEstimadoPipe, ToastModule, ConfirmDialogModule, ResgistroStatusTag],
   providers: [MessageService, ConfirmationService],
   templateUrl: './metodologias-list.html',
 })

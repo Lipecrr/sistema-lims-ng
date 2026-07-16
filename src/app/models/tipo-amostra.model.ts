@@ -1,5 +1,5 @@
 export interface TipoAmostraResponseModel {
-  id: string;
+  id: number;
   tipo: string;
   motivo: 'Rotina' | 'Controle de Qualidade' | 'Prioritária (Rush)';
   publicacaoManual: boolean;

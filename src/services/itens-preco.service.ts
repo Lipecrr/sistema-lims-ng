@@ -7,7 +7,7 @@ import { environment } from '../environment/environment';
 const API_URL = `${environment.apiUrl}/api/v1/itens-preco`;
 
 interface ItemPrecoApi {
-  id: string;
+  id: number;
   status: 'ATIVO' | 'INATIVO';
   identificacao: string;
   preco: number;
@@ -40,7 +40,7 @@ export class ItensPrecoService {
     return this.itensPrecoApi$.pipe(map((itens) => itens.map(paraModel)));
   }
 
-  obterPorId(id: string): Observable<ItemPrecoResponseModel> {
+  obterPorId(id: string | number): Observable<ItemPrecoResponseModel> {
     return this.http.get<ItemPrecoApi>(`${API_URL}/${id}`).pipe(map(paraModel));
   }
 
@@ -51,25 +51,25 @@ export class ItensPrecoService {
     );
   }
 
-  atualizar(id: string, item: Omit<ItemPrecoResponseModel, 'id' | 'status'>): Observable<void> {
+  atualizar(id: string | number, item: Omit<ItemPrecoResponseModel, 'id' | 'status'>): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}`, item).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  ativar(id: string): Observable<void> {
+  ativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  inativar(id: string): Observable<void> {
+  inativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  removeItemPreco(id: string): Observable<void> {
+  removeItemPreco(id: string | number): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${id}`).pipe(
       tap(() => this.reloadSubject.next())
     );

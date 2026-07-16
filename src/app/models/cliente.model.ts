@@ -1,5 +1,5 @@
 export interface ClienteResponseModel{
-    id: string;
+    id: number;
     status: 'Ativo' | 'Inativo';
     nome_empresa_nome_pf: string;
     cnpj_cpf: string;

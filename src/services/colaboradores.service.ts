@@ -7,7 +7,7 @@ import { environment } from '../environment/environment';
 const API_URL = `${environment.apiUrl}/api/v1/colaboradores`;
 
 export interface ColaboradorApi {
-  id: string;
+  id: number;
   status: 'ATIVO' | 'INATIVO';
   nome_completo: string;
   cpf: string;
@@ -15,7 +15,6 @@ export interface ColaboradorApi {
   telefone: string;
   cargo: string;
   departamento: string;
-  matricula: string;
   permissao: 'leitura' | 'operacional' | 'gestao' | 'administrador';
   acesso_login: string;
   foto_url: string | null;
@@ -31,7 +30,6 @@ export interface CriarColaboradorApiPayload {
   telefone: string;
   cargo: string;
   departamento: string;
-  matricula: string;
   permissao: string;
   acesso_login: string;
   senha_temporaria?: string | null;
@@ -70,7 +68,7 @@ export class ColaboradoresService {
     return this.colaboradores$;
   }
 
-  obterPorId(id: string): Observable<ColaboradorApi> {
+  obterPorId(id: string | number): Observable<ColaboradorApi> {
     return this.http.get<ColaboradorApi>(`${API_URL}/${id}`);
   }
 
@@ -80,24 +78,24 @@ export class ColaboradoresService {
     return paraModel(criado);
   }
 
-  async atualizar(id: string, payload: Omit<CriarColaboradorApiPayload, 'senha_temporaria' | 'status'>): Promise<void> {
+  async atualizar(id: string | number, payload: Omit<CriarColaboradorApiPayload, 'senha_temporaria' | 'status'>): Promise<void> {
     await firstValueFrom(this.http.put<void>(`${API_URL}/${id}`, payload));
     this.reloadSubject.next();
   }
 
-  ativar(id: string): Observable<void> {
+  ativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  inativar(id: string): Observable<void> {
+  inativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  deleteColaborador(id: string): Observable<void> {
+  deleteColaborador(id: string | number): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${id}`).pipe(
       tap(() => this.reloadSubject.next())
     );

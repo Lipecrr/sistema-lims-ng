@@ -4,7 +4,7 @@ export interface InformacaoAtividadeModel {
 }
 
 export interface TipoAtividadeModel {
-  id: string;
+  id: number;
   status: 'Ativo' | 'Inativo';
   versao: number;
   tipo: string;

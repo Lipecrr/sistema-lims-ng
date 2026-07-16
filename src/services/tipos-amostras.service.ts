@@ -7,7 +7,7 @@ import { environment } from '../environment/environment';
 const API_URL = `${environment.apiUrl}/api/v1/tipos-amostras`;
 
 interface TipoAmostraApi {
-  id: string;
+  id: number;
   status: 'ATIVO' | 'INATIVO';
   tipo: string;
   motivo: TipoAmostraResponseModel['motivo'];
@@ -59,7 +59,7 @@ export class TiposAmostrasService {
     return this.tipos$;
   }
 
-  obterPorId(id: string): Observable<TipoAmostraResponseModel> {
+  obterPorId(id: string | number): Observable<TipoAmostraResponseModel> {
     return this.http.get<TipoAmostraApi>(`${API_URL}/${id}`).pipe(map(paraModel));
   }
 
@@ -70,7 +70,7 @@ export class TiposAmostrasService {
     );
   }
 
-  atualizar(id: string, tipoAmostra: Omit<TipoAmostraResponseModel, 'id' | 'status'>): Observable<void> {
+  atualizar(id: string | number, tipoAmostra: Omit<TipoAmostraResponseModel, 'id' | 'status'>): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}`, {
       tipo: tipoAmostra.tipo,
       motivo: tipoAmostra.motivo,
@@ -82,19 +82,19 @@ export class TiposAmostrasService {
     );
   }
 
-  ativar(id: string): Observable<void> {
+  ativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/ativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  inativar(id: string): Observable<void> {
+  inativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${API_URL}/${id}/inativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  deleteTipoAmostra(id: string): Observable<void> {
+  deleteTipoAmostra(id: string | number): Observable<void> {
     return this.http.delete<void>(`${API_URL}/${id}`).pipe(
       tap(() => this.reloadSubject.next())
     );

@@ -202,15 +202,12 @@
             </label>
             <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
               Departamento
-              <input type="text" formControlName="departamento"
-                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
+              <select formControlName="departamento"
+                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none appearance-none transition shadow-sm focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100">
+                <option value="">Selecione</option>
+                <option *ngFor="let departamento of departamentos" [value]="departamento.value">{{ departamento.label }}</option>
+              </select>
               <span *ngIf="controle['departamento'].touched && controle['departamento'].invalid" class="text-xs text-red-600">O departamento é obrigatório.</span>
-            </label>
-            <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
-              Matrícula
-              <input type="text" formControlName="matricula"
-                class="rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition shadow-sm placeholder:text-slate-400 focus:border-[#1e40af] focus:ring-2 focus:ring-blue-100" />
-              <span *ngIf="controle['matricula'].touched && controle['matricula'].invalid" class="text-xs text-red-600">Informe a matrícula.</span>
             </label>
             <label class="flex flex-col gap-2 text-sm font-semibold text-slate-700">
               Permissão de sistema

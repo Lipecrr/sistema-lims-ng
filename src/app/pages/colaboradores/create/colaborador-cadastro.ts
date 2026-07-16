@@ -46,6 +46,13 @@ export class ColaboradorCadastro implements OnInit {
     { label: 'Gestão', value: 'gestao' },
     { label: 'Administrador', value: 'administrador' },
   ];
+  departamentos = [
+    { label: 'Laboratório', value: 'Laboratório' },
+    { label: 'Coleta', value: 'Coleta' },
+    { label: 'Administrativo', value: 'Administrativo' },
+    { label: 'Operações', value: 'Operações' },
+    { label: 'Diretoria', value: 'Diretoria' },
+  ];
   fotoNome = 'Nenhum arquivo selecionado';
   fotoPreview: string | null = null;
   isDragging = false;
@@ -78,7 +85,6 @@ export class ColaboradorCadastro implements OnInit {
       telefone: ['', [Validators.required, Validators.pattern('^[0-9]{10,11}$')]],
       cargo: ['', Validators.required],
       departamento: ['', Validators.required],
-      matricula: ['', Validators.required],
       permissao: ['', Validators.required],
       acessoLogin: ['', Validators.required],
       senhaTemporaria: ['', validarComplexidadeSenha],
@@ -110,7 +116,6 @@ export class ColaboradorCadastro implements OnInit {
             telefone: item.telefone,
             cargo: item.cargo,
             departamento: item.departamento,
-            matricula: item.matricula,
             permissao: item.permissao,
             acessoLogin: item.acesso_login,
             enviarEmail: item.enviar_email,
@@ -276,7 +281,6 @@ export class ColaboradorCadastro implements OnInit {
           telefone: valores.telefone,
           cargo: valores.cargo,
           departamento: valores.departamento,
-          matricula: valores.matricula,
           permissao: valores.permissao,
           acesso_login: valores.acessoLogin,
           enviar_email: valores.enviarEmail,
@@ -291,7 +295,6 @@ export class ColaboradorCadastro implements OnInit {
           telefone: valores.telefone,
           cargo: valores.cargo,
           departamento: valores.departamento,
-          matricula: valores.matricula,
           permissao: valores.permissao,
           acesso_login: valores.acessoLogin,
           senha_temporaria: valores.senhaTemporaria || null,

@@ -1,7 +1,7 @@
 export type TipoItemPreco = 'Despesa' | 'Produto' | 'Serviço';
 
 export interface ItemPrecoResponseModel {
-  id: string;
+  id: number;
   identificacao: string;
   preco: number;
   tipo: TipoItemPreco;

@@ -8,13 +8,13 @@ import { environment } from '../environment/environment';
 export const METODOLOGIAS_API_URL = `${environment.apiUrl}/api/v1/metodologias`;
 
 interface RecursoApi {
-  id: string;
+  id: number;
   nome: string;
   quantidade: number;
 }
 
 export interface MetodologiaApi {
-  id: string;
+  id: number;
   status: 'ATIVO' | 'INATIVO';
   codigo: string;
   nome: string;
@@ -23,8 +23,8 @@ export interface MetodologiaApi {
   prazo_conclusao_dias: number;
   criticidade: MetodologiaModel['criticidade'];
   obsoleto: boolean;
-  analises: { id: string; identificacao: string; tipo_amostra: AnaliseModel['tipoAmostra']; unidade_medida: AnaliseModel['unidadeMedida']; incerteza: number; lq: number; ld: number }[];
-  embalagens: { id: string; tipo_embalagem: string; tipo_amostra: string; quantidade: number; unidade_medida: string; preservante: string | null }[];
+  analises: { id: number; identificacao: string; tipo_amostra: AnaliseModel['tipoAmostra']; unidade_medida: AnaliseModel['unidadeMedida']; incerteza: number; lq: number; ld: number }[];
+  embalagens: { id: number; tipo_embalagem: string; tipo_amostra: string; quantidade: number; unidade_medida: string; preservante: string | null }[];
   equipamentos: RecursoApi[];
   reagentes: RecursoApi[];
 }
@@ -85,23 +85,23 @@ export class MetodologiasListService {
     this.reloadSubject.next();
   }
 
-  obterPorId(id: string): Observable<MetodologiaModel> {
+  obterPorId(id: string | number): Observable<MetodologiaModel> {
     return this.http.get<MetodologiaApi>(`${METODOLOGIAS_API_URL}/${id}`).pipe(map(paraModel));
   }
 
-  ativar(id: string): Observable<void> {
+  ativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${METODOLOGIAS_API_URL}/${id}/ativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  inativar(id: string): Observable<void> {
+  inativar(id: string | number): Observable<void> {
     return this.http.put<void>(`${METODOLOGIAS_API_URL}/${id}/inativar`, {}).pipe(
       tap(() => this.reloadSubject.next())
     );
   }
 
-  deleteMetodologia(id: string): Observable<void> {
+  deleteMetodologia(id: string | number): Observable<void> {
     return this.http.delete<void>(`${METODOLOGIAS_API_URL}/${id}`).pipe(
       tap(() => this.reloadSubject.next())
     );

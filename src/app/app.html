@@ -4,7 +4,9 @@
   <app-sidebar></app-sidebar>
 
   <!-- CONTEÚDO -->
-  <main class="ml-64 p-6 bg-gray-50 min-h-screen">
+  <main class="p-6 bg-gray-50 min-h-screen transition-[margin-left] duration-200"
+    [class.ml-64]="!sidebarState.recolhida()"
+    [class.ml-20]="sidebarState.recolhida()">
     <router-outlet></router-outlet>
   </main>
 
