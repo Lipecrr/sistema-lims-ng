@@ -55,6 +55,12 @@
 
     <div class="mt-8 space-y-8">
 
+      <!-- Flag de check reutilizável (representa Sim/Não visualmente) -->
+      <ng-template #flag let-on="on">
+        <i *ngIf="on" class="pi pi-check text-emerald-600"></i>
+        <span *ngIf="!on" class="text-slate-300">–</span>
+      </ng-template>
+
       <!-- ================= DETALHES ================= -->
       <section *ngIf="currentTab() === 'detalhes'" [formGroup]="formDetalhes">
         <div class="grid gap-6 md:grid-cols-4">
@@ -202,10 +208,6 @@
                   </td>
                 </tr>
               </ng-container>
-              <ng-template #flag let-on="on">
-                <i *ngIf="on" class="pi pi-check text-emerald-600"></i>
-                <span *ngIf="!on" class="text-slate-300">–</span>
-              </ng-template>
               <tr *ngIf="etapas().length === 0">
                 <td [attr.colspan]="modoVisualizacao ? 9 : 10" class="px-4 py-8 text-center text-sm text-slate-500">Nenhuma etapa adicionada ainda.</td>
               </tr>
@@ -273,18 +275,47 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
-              <tr *ngFor="let info of informacoes(); let i = index">
-                <td class="px-4 py-3 font-medium text-slate-900">{{ info.ordem }}</td>
-                <td class="px-4 py-3">{{ info.etapa }}</td>
-                <td class="px-4 py-3">{{ info.informacao }}</td>
-                <td class="px-4 py-3">{{ info.valor || '—' }}</td>
-                <td class="px-4 py-3">{{ info.amostraHerda ? 'Sim' : 'Não' }}</td>
-                <td class="px-4 py-3">{{ info.obrigatorioEntrar ? 'Sim' : 'Não' }}</td>
-                <td class="px-4 py-3">{{ info.obrigatorioSair ? 'Sim' : 'Não' }}</td>
-                <td *ngIf="!modoVisualizacao" class="px-4 py-3 text-right">
-                  <button type="button" (click)="removerInformacao(i)" class="text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
-                </td>
-              </tr>
+              <ng-container *ngFor="let info of informacoes(); let i = index">
+                <!-- Linha de exibição -->
+                <tr *ngIf="editandoInfo() !== i">
+                  <td class="px-4 py-3 font-medium text-slate-900">{{ info.ordem }}</td>
+                  <td class="px-4 py-3">{{ info.etapa }}</td>
+                  <td class="px-4 py-3">{{ info.informacao }}</td>
+                  <td class="px-4 py-3">{{ info.valor || '—' }}</td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: info.amostraHerda }"></ng-container></td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: info.obrigatorioEntrar }"></ng-container></td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: info.obrigatorioSair }"></ng-container></td>
+                  <td *ngIf="!modoVisualizacao" class="px-4 py-3 text-right whitespace-nowrap">
+                    <button type="button" (click)="iniciarEdicaoInfo(i)" class="text-sm font-semibold text-blue-600 hover:text-blue-800">Editar</button>
+                    <button type="button" (click)="removerInformacao(i)" class="ml-3 text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
+                  </td>
+                </tr>
+                <!-- Linha de edição inline -->
+                <tr *ngIf="editandoInfo() === i" [formGroup]="formInfoEdicao" class="bg-blue-50">
+                  <td class="px-3 py-2 font-medium text-slate-900">{{ info.ordem }}</td>
+                  <td class="px-3 py-2">
+                    <select formControlName="etapa" class="w-40 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600">
+                      <option value="" disabled>Selecione</option>
+                      <option *ngFor="let nome of etapasDisponiveis()" [value]="nome">{{ nome }}</option>
+                    </select>
+                  </td>
+                  <td class="px-3 py-2">
+                    <input type="text" formControlName="informacao" placeholder="Informação"
+                      class="w-48 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" />
+                  </td>
+                  <td class="px-3 py-2">
+                    <input type="text" formControlName="valor" placeholder="—"
+                      class="w-32 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" />
+                  </td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="amostraHerda" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="obrigatorioEntrar" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="obrigatorioSair" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2 text-right whitespace-nowrap">
+                    <button type="button" (click)="salvarEdicaoInfo()" class="text-sm font-semibold text-emerald-600 hover:text-emerald-800">Salvar</button>
+                    <button type="button" (click)="cancelarEdicaoInfo()" class="ml-3 text-sm font-semibold text-slate-500 hover:text-slate-700">Cancelar</button>
+                  </td>
+                </tr>
+              </ng-container>
               <tr *ngIf="informacoes().length === 0">
                 <td [attr.colspan]="modoVisualizacao ? 7 : 8" class="px-4 py-8 text-center text-sm text-slate-500">Nenhuma informação cadastrada ainda.</td>
               </tr>

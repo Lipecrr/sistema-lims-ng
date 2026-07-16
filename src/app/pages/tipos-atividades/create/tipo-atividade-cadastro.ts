@@ -32,6 +32,10 @@ export class TipoAtividadeCadastro implements OnInit {
   editandoEtapa = signal<number | null>(null);
   formEtapaEdicao!: FormGroup;
 
+  /** Índice da informação em edição inline (null = nenhuma). */
+  editandoInfo = signal<number | null>(null);
+  formInfoEdicao!: FormGroup;
+
   situacaoAmostraOptions = ['Modelo', 'Registrada'] as const;
 
   /** Nomes de etapas já usados no fluxo — alimenta datalists e o select de Informações. */
@@ -77,6 +81,7 @@ export class TipoAtividadeCadastro implements OnInit {
     this.formEtapa = this.criarFormEtapa();
     this.formEtapaEdicao = this.criarFormEtapa();
     this.formInfo = this.criarFormInfo();
+    this.formInfoEdicao = this.criarFormInfo();
 
     this.id = this.route.snapshot.paramMap.get('id');
     this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
@@ -97,6 +102,7 @@ export class TipoAtividadeCadastro implements OnInit {
             this.formEtapa.disable();
             this.formEtapaEdicao.disable();
             this.formInfo.disable();
+            this.formInfoEdicao.disable();
           }
         },
         error: () => {
@@ -249,7 +255,48 @@ export class TipoAtividadeCadastro implements OnInit {
   }
 
   removerInformacao(index: number): void {
+    this.editandoInfo.set(null);
     this.informacoes.update((atual) => this.resequenciar(atual.filter((_, i) => i !== index)));
+  }
+
+  iniciarEdicaoInfo(index: number): void {
+    const info = this.informacoes()[index];
+    this.formInfoEdicao.reset({
+      etapa: info.etapa,
+      informacao: info.informacao,
+      valor: info.valor ?? '',
+      amostraHerda: info.amostraHerda,
+      obrigatorioEntrar: info.obrigatorioEntrar,
+      obrigatorioSair: info.obrigatorioSair,
+    });
+    this.editandoInfo.set(index);
+  }
+
+  salvarEdicaoInfo(): void {
+    const index = this.editandoInfo();
+    if (index === null) return;
+    if (this.formInfoEdicao.invalid) {
+      this.formInfoEdicao.markAllAsTouched();
+      return;
+    }
+    const atual = this.informacoes()[index];
+    const v = this.formInfoEdicao.getRawValue();
+    const atualizada: InformacaoAtividadeModel = {
+      id: atual?.id,
+      ordem: atual.ordem,
+      etapa: (v.etapa || '').trim(),
+      informacao: (v.informacao || '').trim(),
+      valor: (v.valor || '').trim() || null,
+      amostraHerda: !!v.amostraHerda,
+      obrigatorioEntrar: !!v.obrigatorioEntrar,
+      obrigatorioSair: !!v.obrigatorioSair,
+    };
+    this.informacoes.update((arr) => arr.map((item, i) => (i === index ? atualizada : item)));
+    this.editandoInfo.set(null);
+  }
+
+  cancelarEdicaoInfo(): void {
+    this.editandoInfo.set(null);
   }
 
   cancelar(): void {
