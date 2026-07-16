@@ -240,8 +240,12 @@
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Informação *</label>
-              <input type="text" formControlName="informacao" placeholder="Ex.: Forma de Pagamento"
-                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+              <select formControlName="informacao"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600">
+                <option value="" disabled>Selecione do catálogo</option>
+                <option *ngFor="let inf of informacoesAtivas()" [value]="inf.identificacao">{{ inf.identificacao }}</option>
+              </select>
+              <p *ngIf="informacoesAtivas().length === 0" class="mt-1 text-xs text-amber-600">Cadastre informações no catálogo primeiro.</p>
             </div>
             <div>
               <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Valor</label>
@@ -308,8 +312,10 @@
                     </select>
                   </td>
                   <td class="px-3 py-2">
-                    <input type="text" formControlName="informacao" placeholder="Informação"
-                      class="w-48 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" />
+                    <select formControlName="informacao" class="w-48 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600">
+                      <option value="" disabled>Selecione</option>
+                      <option *ngFor="let inf of informacoesAtivas()" [value]="inf.identificacao">{{ inf.identificacao }}</option>
+                    </select>
                   </td>
                   <td class="px-3 py-2">
                     <input type="text" formControlName="valor" placeholder="—"

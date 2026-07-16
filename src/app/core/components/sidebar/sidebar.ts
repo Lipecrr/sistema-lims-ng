@@ -35,6 +35,7 @@ export class Sidebar {
     { label: 'Metodologias', route: '/metodologias' },
     { label: 'Tipos de Amostras', route: '/tipos-amostras' },
     { label: 'Tipos de Atividade', route: '/tipos-atividades' },
+    { label: 'Informações', route: '/informacoes' },
   ];
 
   user = {

@@ -1,4 +1,5 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -8,6 +9,7 @@ import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
 import { EtapaFluxoModel, InformacaoAtividadeModel, TipoAtividadeModel } from '@/models/tipo-atividade.model';
 import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
+import { InformacoesService } from 'src/services/informacoes.service';
 
 type Aba = 'detalhes' | 'fluxo' | 'informacoes';
 
@@ -54,6 +56,11 @@ export class TipoAtividadeCadastro implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+  private readonly informacoesService = inject(InformacoesService);
+
+  /** Catálogo de informações para o select da aba Informações. */
+  informacoesCatalogo = toSignal(this.informacoesService.lista$, { initialValue: [] });
+  informacoesAtivas = computed(() => this.informacoesCatalogo().filter((i) => i.status === 'Ativo'));
 
   get controle() {
     return this.formDetalhes.controls;

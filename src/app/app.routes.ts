@@ -33,4 +33,9 @@ export const routes: Routes = [
     { path: 'itens-preco/novo', loadComponent: () => import('./pages/itens-preco/create/item-preco-cadastro.js').then((m) => m.ItemPrecoCadastro) },
     { path: 'itens-preco/:id/editar', loadComponent: () => import('./pages/itens-preco/create/item-preco-cadastro.js').then((m) => m.ItemPrecoCadastro), data: { modo: 'editar' } },
     { path: 'itens-preco/:id', loadComponent: () => import('./pages/itens-preco/create/item-preco-cadastro.js').then((m) => m.ItemPrecoCadastro), data: { modo: 'visualizar' } },
+
+    { path: 'informacoes', loadComponent: () => import('./pages/informacoes/list/list.js').then((m) => m.List) },
+    { path: 'informacoes/novo', loadComponent: () => import('./pages/informacoes/create/informacao-cadastro.js').then((m) => m.InformacaoCadastro) },
+    { path: 'informacoes/:id/editar', loadComponent: () => import('./pages/informacoes/create/informacao-cadastro.js').then((m) => m.InformacaoCadastro), data: { modo: 'editar' } },
+    { path: 'informacoes/:id', loadComponent: () => import('./pages/informacoes/create/informacao-cadastro.js').then((m) => m.InformacaoCadastro), data: { modo: 'visualizar' } },
 ];

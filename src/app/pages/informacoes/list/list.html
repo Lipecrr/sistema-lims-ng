@@ -1,0 +1,59 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="space-y-6 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-slate-900">Informações</h1>
+      <p class="text-slate-600">Catálogo de campos de preenchimento usados nos tipos de atividade e propostas.</p>
+    </div>
+
+    <a routerLink="/informacoes/novo" class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+      Criar Informação
+    </a>
+  </div>
+
+  <section class="overflow-x-auto rounded-[24px] border border-slate-200 bg-white shadow-sm">
+    <table class="min-w-full divide-y divide-slate-200 text-sm">
+      <thead class="bg-slate-50 text-slate-700">
+        <tr>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">ID</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Identificação</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Tipo</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Valor Livre?</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Opções</th>
+          <th class="px-5 py-4 text-left font-semibold uppercase tracking-[0.08em]">Status</th>
+          <th class="px-5 py-4 text-right font-semibold uppercase tracking-[0.08em]">Ações</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
+        <tr *ngFor="let item of lista$ | async">
+          <td class="px-5 py-4 font-medium text-slate-900">{{ item.id }}</td>
+          <td class="px-5 py-4">{{ item.identificacao }}</td>
+          <td class="px-5 py-4 text-slate-700">{{ item.tipo }}</td>
+          <td class="px-5 py-4 text-slate-700">{{ item.valorLivre ? 'Sim' : 'Não' }}</td>
+          <td class="px-5 py-4 text-slate-700">{{ item.opcoes.length }} opção(ões)</td>
+          <td class="px-5 py-4">
+            <app-registro-status-tag [status]="item.status"></app-registro-status-tag>
+          </td>
+          <td class="px-5 py-4">
+            <div class="flex justify-end gap-2 text-slate-500">
+              <button type="button" [routerLink]="['/informacoes', item.id]" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Visualizar">
+                <i class="pi pi-eye"></i>
+              </button>
+              <button type="button" [routerLink]="['/informacoes', item.id, 'editar']" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 transition hover:bg-slate-100" aria-label="Editar">
+                <i class="pi pi-pencil"></i>
+              </button>
+              <button type="button" (click)="alternarStatus(item)" class="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 text-amber-600 transition hover:bg-amber-50" [attr.aria-label]="item.status === 'Ativo' ? 'Inativar' : 'Ativar'">
+                <i [class]="item.status === 'Ativo' ? 'pi pi-ban' : 'pi pi-check-circle'"></i>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="(lista$ | async)?.length === 0">
+          <td colspan="7" class="px-5 py-10 text-center text-sm text-slate-500">Nenhuma informação encontrada.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+</div>
