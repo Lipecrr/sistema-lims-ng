@@ -24,7 +24,7 @@ export class List {
   alternarStatus(item: TipoAtividadeModel): void {
     const inativando = item.status === 'Ativo';
     this.confirmationService.confirm({
-      message: `Deseja realmente ${inativando ? 'inativar' : 'ativar'} "${item.tipo}"?`,
+      message: `Deseja realmente ${inativando ? 'inativar' : 'ativar'} "${item.identificacao}"?`,
       header: 'Confirmar',
       icon: 'pi pi-exclamation-triangle',
       acceptLabel: inativando ? 'Sim, inativar' : 'Sim, ativar',

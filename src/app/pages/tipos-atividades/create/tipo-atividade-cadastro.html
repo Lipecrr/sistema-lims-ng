@@ -1,7 +1,7 @@
 <p-toast></p-toast>
 <p-confirmDialog></p-confirmDialog>
 
-<div class="space-y-6 max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+<div class="space-y-6 max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <div>
       <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Cadastro</p>
@@ -33,162 +33,284 @@
       <button
         type="button"
         (click)="setTab('detalhes')"
-        [class]="currentTab === 'detalhes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
+        [class]="currentTab() === 'detalhes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
       >
         Detalhes
       </button>
       <button
         type="button"
         (click)="setTab('fluxo')"
-        [class]="currentTab === 'fluxo' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
+        [class]="currentTab() === 'fluxo' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
       >
         Fluxo de Etapas
       </button>
       <button
         type="button"
         (click)="setTab('informacoes')"
-        [class]="currentTab === 'informacoes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
+        [class]="currentTab() === 'informacoes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'"
       >
         Informações
       </button>
     </div>
 
-    <div class="mt-8">
-      <form [formGroup]="formAtividade" class="space-y-8">
-        <section *ngIf="currentTab === 'detalhes'">
-          <div class="grid gap-6 md:grid-cols-3">
-            <div>
-              <label class="block text-sm font-semibold text-slate-700">Id</label>
-              <input
-                type="text"
-                formControlName="id"
-                [disabled]="true"
-                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700">Versão</label>
-              <input
-                type="number"
-                formControlName="versao"
-                [disabled]="true"
-                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none"
-              />
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700">Identificação</label>
-              <input
-                type="text"
-                formControlName="tipo"
-                placeholder="Nome da atividade"
-                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              />
-              <p *ngIf="controle['tipo'].invalid && controle['tipo'].touched" class="text-sm text-red-600">Informe o nome da atividade.</p>
-            </div>
-          </div>
-        </section>
+    <div class="mt-8 space-y-8">
 
-        <section *ngIf="currentTab === 'fluxo'">
-          <div *ngIf="!modoVisualizacao" class="grid gap-6 md:grid-cols-[1fr_auto] items-end">
+      <!-- ================= DETALHES ================= -->
+      <section *ngIf="currentTab() === 'detalhes'" [formGroup]="formDetalhes">
+        <div class="grid gap-6 md:grid-cols-4">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Id</label>
+            <input type="text" formControlName="id"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Versão</label>
+            <input type="number" formControlName="versao"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-slate-700">Identificação</label>
+            <input type="text" formControlName="identificacao" placeholder="Nome da atividade"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+            <p *ngIf="controle['identificacao'].invalid && controle['identificacao'].touched" class="mt-1 text-sm text-red-600">Informe a identificação (mínimo 3 caracteres).</p>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Prefixo</label>
+            <input type="text" formControlName="prefixo" placeholder="Ex.: PC"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= FLUXO DE ETAPAS ================= -->
+      <section *ngIf="currentTab() === 'fluxo'">
+        <datalist id="etapasList">
+          <option *ngFor="let nome of etapasDisponiveis()" [value]="nome"></option>
+        </datalist>
+
+        <div *ngIf="!modoVisualizacao" [formGroup]="formEtapa" class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <div class="mb-4 text-sm font-semibold text-slate-700">Adicionar transição</div>
+          <div class="grid gap-4 md:grid-cols-3">
             <div>
-              <label class="block text-sm font-semibold text-slate-700">Etapa</label>
-              <select
-                name="etapaSelecionada"
-                [(ngModel)]="etapaSelecionada"
-                [ngModelOptions]="{ standalone: true }"
-                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="" disabled>Selecione uma etapa</option>
-                <option *ngFor="let etapa of etapaOptions" [value]="etapa">{{ etapa }}</option>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Etapa Anterior</label>
+              <input type="text" formControlName="etapaAnterior" list="etapasList" placeholder="(vazio = entrada)"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Etapa Seguinte *</label>
+              <input type="text" formControlName="etapaSeguinte" list="etapasList" placeholder="Nome da etapa"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Prazo Conclusão (h)</label>
+              <input type="number" min="0" formControlName="prazoConclusaoHoras" placeholder="—"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Situação Inicial da Amostra</label>
+              <select formControlName="situacaoInicialAmostra"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600">
+                <option value="">—</option>
+                <option *ngFor="let s of situacaoAmostraOptions" [value]="s">{{ s }}</option>
               </select>
             </div>
-            <button
-              type="button"
-              (click)="adicionarEtapa()"
-              class="inline-flex h-12 items-center justify-center rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700"
-            >
-              Add
+            <div class="md:col-span-2 grid grid-cols-2 gap-3 sm:grid-cols-3">
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="finaliza" class="h-4 w-4 rounded border-slate-300" /> Finaliza?
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="permiteAmostras" class="h-4 w-4 rounded border-slate-300" /> Permite Amostras?
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="permiteEditarAmostras" class="h-4 w-4 rounded border-slate-300" /> Permite Editar Amostras?
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="editaTemposEstimados" class="h-4 w-4 rounded border-slate-300" /> Edita Tempos Estimados?
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="obrigaConta" class="h-4 w-4 rounded border-slate-300" /> Obriga Conta?
+              </label>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button type="button" (click)="adicionarEtapa()"
+              class="inline-flex h-11 items-center justify-center rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700">
+              Adicionar etapa
             </button>
           </div>
-
-          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-4 text-sm font-semibold text-slate-700">Fluxo atual</div>
-            <ul class="space-y-3">
-              <li *ngFor="let etapa of fluxoEtapas; let i = index" class="flex items-center justify-between rounded-2xl bg-white border border-slate-200 px-4 py-3">
-                <span>{{ i + 1 }}. {{ etapa }}</span>
-                <button *ngIf="!modoVisualizacao" type="button" (click)="removerEtapa(i)" class="text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
-              </li>
-            </ul>
-            <p *ngIf="fluxoEtapas.length === 0" class="text-sm text-slate-500">Nenhuma etapa adicionada ainda.</p>
-          </div>
-        </section>
-
-        <section *ngIf="currentTab === 'informacoes'">
-          <div *ngIf="!modoVisualizacao" class="grid gap-6 md:grid-cols-2">
-            <div>
-              <label class="block text-sm font-semibold text-slate-700">Etapa</label>
-              <select
-                name="etapaInfoSelecionada"
-                [(ngModel)]="etapaInfoSelecionada"
-                [ngModelOptions]="{ standalone: true }"
-                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="" disabled>Selecione a etapa</option>
-                <option *ngFor="let etapa of etapaOptions" [value]="etapa">{{ etapa }}</option>
-              </select>
-            </div>
-            <div>
-              <label class="block text-sm font-semibold text-slate-700">Informação</label>
-              <select
-                name="informacaoSelecionada"
-                [(ngModel)]="informacaoSelecionada"
-                [ngModelOptions]="{ standalone: true }"
-                class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              >
-                <option value="" disabled>Selecione a informação</option>
-                <option *ngFor="let info of informacaoOptions" [value]="info">{{ info }}</option>
-              </select>
-            </div>
-          </div>
-
-          <button
-            *ngIf="!modoVisualizacao"
-            type="button"
-            (click)="adicionarInformacao()"
-            class="mt-6 inline-flex h-12 items-center justify-center rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            Add
-          </button>
-
-          <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-4">
-            <div class="mb-4 text-sm font-semibold text-slate-700">Informações configuradas</div>
-            <ul class="space-y-3">
-              <li *ngFor="let info of informacoes; let i = index" class="flex items-center justify-between rounded-2xl bg-white border border-slate-200 px-4 py-3">
-                <span>{{ i + 1 }}. {{ info.informacao }} em {{ info.etapa }}</span>
-                <button *ngIf="!modoVisualizacao" type="button" (click)="removerInformacao(i)" class="text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
-              </li>
-            </ul>
-            <p *ngIf="informacoes.length === 0" class="text-sm text-slate-500">Nenhuma informação cadastrada ainda.</p>
-          </div>
-        </section>
-
-        <div *ngIf="!modoVisualizacao" class="flex flex-col gap-3 sm:flex-row sm:justify-end">
-          <button
-            type="button"
-            (click)="cancelar()"
-            class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            (click)="salvar()"
-            class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
-          >
-            {{ id ? 'Salvar Alterações' : 'Salvar Tipo de Atividade' }}
-          </button>
         </div>
-      </form>
+
+        <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr class="text-left">
+                <th class="px-4 py-3 font-semibold">Etapa Anterior</th>
+                <th class="px-4 py-3 font-semibold">Etapa Seguinte</th>
+                <th class="px-4 py-3 font-semibold">Finaliza?</th>
+                <th class="px-4 py-3 font-semibold">Prazo (h)</th>
+                <th class="px-4 py-3 font-semibold">Permite Amostras?</th>
+                <th class="px-4 py-3 font-semibold">Situação Inicial</th>
+                <th class="px-4 py-3 font-semibold">Edita Amostras?</th>
+                <th class="px-4 py-3 font-semibold">Edita Tempos?</th>
+                <th class="px-4 py-3 font-semibold">Obriga Conta?</th>
+                <th *ngIf="!modoVisualizacao" class="px-4 py-3 text-right font-semibold">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
+              <ng-container *ngFor="let e of etapas(); let i = index">
+                <!-- Linha de exibição -->
+                <tr *ngIf="editandoEtapa() !== i">
+                  <td class="px-4 py-3 text-slate-500">{{ e.etapaAnterior || '— (entrada)' }}</td>
+                  <td class="px-4 py-3 font-medium text-slate-900">{{ e.etapaSeguinte }}</td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.finaliza }"></ng-container></td>
+                  <td class="px-4 py-3">{{ e.prazoConclusaoHoras ?? '—' }}</td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.permiteAmostras }"></ng-container></td>
+                  <td class="px-4 py-3">{{ e.situacaoInicialAmostra || '—' }}</td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.permiteEditarAmostras }"></ng-container></td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.editaTemposEstimados }"></ng-container></td>
+                  <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.obrigaConta }"></ng-container></td>
+                  <td *ngIf="!modoVisualizacao" class="px-4 py-3 text-right whitespace-nowrap">
+                    <button type="button" (click)="iniciarEdicaoEtapa(i)" class="text-sm font-semibold text-blue-600 hover:text-blue-800">Editar</button>
+                    <button type="button" (click)="removerEtapa(i)" class="ml-3 text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
+                  </td>
+                </tr>
+                <!-- Linha de edição inline -->
+                <tr *ngIf="editandoEtapa() === i" [formGroup]="formEtapaEdicao" class="bg-blue-50">
+                  <td class="px-3 py-2">
+                    <input type="text" formControlName="etapaAnterior" list="etapasList" placeholder="(entrada)"
+                      class="w-36 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" />
+                  </td>
+                  <td class="px-3 py-2">
+                    <input type="text" formControlName="etapaSeguinte" list="etapasList" placeholder="Etapa"
+                      class="w-36 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" />
+                  </td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="finaliza" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2"><input type="number" min="0" formControlName="prazoConclusaoHoras" placeholder="—" class="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" /></td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="permiteAmostras" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2">
+                    <select formControlName="situacaoInicialAmostra" class="w-32 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600">
+                      <option value="">—</option>
+                      <option *ngFor="let s of situacaoAmostraOptions" [value]="s">{{ s }}</option>
+                    </select>
+                  </td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="permiteEditarAmostras" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="editaTemposEstimados" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="obrigaConta" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2 text-right whitespace-nowrap">
+                    <button type="button" (click)="salvarEdicaoEtapa()" class="text-sm font-semibold text-emerald-600 hover:text-emerald-800">Salvar</button>
+                    <button type="button" (click)="cancelarEdicaoEtapa()" class="ml-3 text-sm font-semibold text-slate-500 hover:text-slate-700">Cancelar</button>
+                  </td>
+                </tr>
+              </ng-container>
+              <ng-template #flag let-on="on">
+                <i *ngIf="on" class="pi pi-check text-emerald-600"></i>
+                <span *ngIf="!on" class="text-slate-300">–</span>
+              </ng-template>
+              <tr *ngIf="etapas().length === 0">
+                <td [attr.colspan]="modoVisualizacao ? 9 : 10" class="px-4 py-8 text-center text-sm text-slate-500">Nenhuma etapa adicionada ainda.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= INFORMAÇÕES ================= -->
+      <section *ngIf="currentTab() === 'informacoes'">
+        <div *ngIf="!modoVisualizacao" [formGroup]="formInfo" class="rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <div class="mb-4 text-sm font-semibold text-slate-700">Adicionar informação</div>
+          <div class="grid gap-4 md:grid-cols-3">
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Fluxo de Etapa *</label>
+              <select formControlName="etapa"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600">
+                <option value="" disabled>Selecione a etapa</option>
+                <option *ngFor="let nome of etapasDisponiveis()" [value]="nome">{{ nome }}</option>
+              </select>
+              <p *ngIf="etapasDisponiveis().length === 0" class="mt-1 text-xs text-amber-600">Adicione etapas no Fluxo primeiro.</p>
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Informação *</label>
+              <input type="text" formControlName="informacao" placeholder="Ex.: Forma de Pagamento"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Valor</label>
+              <input type="text" formControlName="valor" placeholder="Ex.: 30 dias"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+            </div>
+            <div class="md:col-span-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="amostraHerda" class="h-4 w-4 rounded border-slate-300" /> Amostra herda?
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="obrigatorioEntrar" class="h-4 w-4 rounded border-slate-300" /> Obrigatório ao entrar na etapa?
+              </label>
+              <label class="flex items-center gap-2 text-sm text-slate-700">
+                <input type="checkbox" formControlName="obrigatorioSair" class="h-4 w-4 rounded border-slate-300" /> Obrigatório ao sair da etapa?
+              </label>
+            </div>
+          </div>
+          <div class="mt-4 flex justify-end">
+            <button type="button" (click)="adicionarInformacao()"
+              class="inline-flex h-11 items-center justify-center rounded-2xl bg-blue-600 px-6 text-sm font-semibold text-white transition hover:bg-blue-700">
+              Adicionar informação
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="min-w-full divide-y divide-slate-200 text-sm">
+            <thead class="bg-slate-50 text-slate-600">
+              <tr class="text-left">
+                <th class="px-4 py-3 font-semibold">Ordem</th>
+                <th class="px-4 py-3 font-semibold">Fluxo de Etapa</th>
+                <th class="px-4 py-3 font-semibold">Informação</th>
+                <th class="px-4 py-3 font-semibold">Valor</th>
+                <th class="px-4 py-3 font-semibold">Amostra herda?</th>
+                <th class="px-4 py-3 font-semibold">Obrig. ao entrar?</th>
+                <th class="px-4 py-3 font-semibold">Obrig. ao sair?</th>
+                <th *ngIf="!modoVisualizacao" class="px-4 py-3 text-right font-semibold">Ações</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200 bg-white text-slate-800">
+              <tr *ngFor="let info of informacoes(); let i = index">
+                <td class="px-4 py-3 font-medium text-slate-900">{{ info.ordem }}</td>
+                <td class="px-4 py-3">{{ info.etapa }}</td>
+                <td class="px-4 py-3">{{ info.informacao }}</td>
+                <td class="px-4 py-3">{{ info.valor || '—' }}</td>
+                <td class="px-4 py-3">{{ info.amostraHerda ? 'Sim' : 'Não' }}</td>
+                <td class="px-4 py-3">{{ info.obrigatorioEntrar ? 'Sim' : 'Não' }}</td>
+                <td class="px-4 py-3">{{ info.obrigatorioSair ? 'Sim' : 'Não' }}</td>
+                <td *ngIf="!modoVisualizacao" class="px-4 py-3 text-right">
+                  <button type="button" (click)="removerInformacao(i)" class="text-sm font-semibold text-red-600 hover:text-red-800">Remover</button>
+                </td>
+              </tr>
+              <tr *ngIf="informacoes().length === 0">
+                <td [attr.colspan]="modoVisualizacao ? 7 : 8" class="px-4 py-8 text-center text-sm text-slate-500">Nenhuma informação cadastrada ainda.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= AÇÕES ================= -->
+      <div *ngIf="!modoVisualizacao" class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button
+          type="button"
+          (click)="cancelar()"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
+        >
+          Cancelar
+        </button>
+        <button
+          type="button"
+          (click)="salvar()"
+          class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700"
+        >
+          {{ id ? 'Salvar Alterações' : 'Salvar Tipo de Atividade' }}
+        </button>
+      </div>
+
     </div>
   </div>
 </div>

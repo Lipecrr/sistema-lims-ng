@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -6,8 +6,10 @@ import { map } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { InformacaoAtividadeModel, TipoAtividadeModel } from '@/models/tipo-atividade.model';
+import { EtapaFluxoModel, InformacaoAtividadeModel, TipoAtividadeModel } from '@/models/tipo-atividade.model';
 import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
+
+type Aba = 'detalhes' | 'fluxo' | 'informacoes';
 
 @Component({
   selector: 'app-tipo-atividade-cadastro',
@@ -17,20 +19,30 @@ import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
   templateUrl: './tipo-atividade-cadastro.html',
 })
 export class TipoAtividadeCadastro implements OnInit {
-  get controle() {
-    return this.formAtividade.controls;
-  }
-  currentTab: 'detalhes' | 'fluxo' | 'informacoes' = 'detalhes';
-  formAtividade!: FormGroup;
-  etapaOptions = ['Elaboração', 'Negociação', 'Reprovada', 'Cancelada', 'Revisão', 'Aprovada', 'Finalizada', 'Agendamento', 'Agendada', 'Coletada'] as const;
-  informacaoOptions = ['Responsabilidade da Amostragem', 'Condição de Pagamento', 'Forma de Pagamento', 'Validade da Proposta'] as const;
+  currentTab = signal<Aba>('detalhes');
 
-  fluxoEtapas: string[] = [];
-  etapaSelecionada = '';
+  formDetalhes!: FormGroup;
+  formEtapa!: FormGroup;
+  formInfo!: FormGroup;
 
-  informacoes: InformacaoAtividadeModel[] = [];
-  etapaInfoSelecionada = '';
-  informacaoSelecionada = '';
+  etapas = signal<EtapaFluxoModel[]>([]);
+  informacoes = signal<InformacaoAtividadeModel[]>([]);
+
+  /** Índice da transição em edição inline (null = nenhuma). */
+  editandoEtapa = signal<number | null>(null);
+  formEtapaEdicao!: FormGroup;
+
+  situacaoAmostraOptions = ['Modelo', 'Registrada'] as const;
+
+  /** Nomes de etapas já usados no fluxo — alimenta datalists e o select de Informações. */
+  etapasDisponiveis = computed(() => {
+    const nomes = new Set<string>();
+    for (const e of this.etapas()) {
+      if (e.etapaAnterior) nomes.add(e.etapaAnterior);
+      if (e.etapaSeguinte) nomes.add(e.etapaSeguinte);
+    }
+    return [...nomes];
+  });
 
   id: string | null = null;
   modoVisualizacao = false;
@@ -38,6 +50,10 @@ export class TipoAtividadeCadastro implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly messageService = inject(MessageService);
   private readonly confirmationService = inject(ConfirmationService);
+
+  get controle() {
+    return this.formDetalhes.controls;
+  }
 
   get tituloPagina(): string {
     if (this.modoVisualizacao) return 'Visualizar Tipo de Atividade';
@@ -51,11 +67,16 @@ export class TipoAtividadeCadastro implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.formAtividade = this.fb.group({
-      id: [{ value: `TA-${Date.now()}`, disabled: true }],
+    this.formDetalhes = this.fb.group({
+      id: [{ value: '—', disabled: true }],
       versao: [{ value: 1, disabled: true }],
-      tipo: ['', Validators.required],
+      identificacao: ['', [Validators.required, Validators.minLength(3)]],
+      prefixo: [''],
     });
+
+    this.formEtapa = this.criarFormEtapa();
+    this.formEtapaEdicao = this.criarFormEtapa();
+    this.formInfo = this.criarFormInfo();
 
     this.id = this.route.snapshot.paramMap.get('id');
     this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
@@ -63,11 +84,19 @@ export class TipoAtividadeCadastro implements OnInit {
     if (this.id) {
       this.service.obterPorId(this.id).subscribe({
         next: (item) => {
-          this.formAtividade.patchValue({ id: item.id, versao: item.versao, tipo: item.tipo });
-          this.fluxoEtapas = [...item.fluxoEtapas];
-          this.informacoes = [...item.informacoes];
+          this.formDetalhes.patchValue({
+            id: item.id,
+            versao: item.versao,
+            identificacao: item.identificacao,
+            prefixo: item.prefixo ?? '',
+          });
+          this.etapas.set([...item.etapas]);
+          this.informacoes.set(this.resequenciar([...item.informacoes]));
           if (this.modoVisualizacao) {
-            this.formAtividade.disable();
+            this.formDetalhes.disable();
+            this.formEtapa.disable();
+            this.formEtapaEdicao.disable();
+            this.formInfo.disable();
           }
         },
         error: () => {
@@ -77,47 +106,150 @@ export class TipoAtividadeCadastro implements OnInit {
     }
   }
 
+  private criarFormEtapa(): FormGroup {
+    return this.fb.group({
+      etapaAnterior: [''],
+      etapaSeguinte: ['', Validators.required],
+      finaliza: [false],
+      prazoConclusaoHoras: [null],
+      permiteAmostras: [false],
+      situacaoInicialAmostra: [''],
+      permiteEditarAmostras: [false],
+      editaTemposEstimados: [false],
+      obrigaConta: [false],
+    });
+  }
+
+  private criarFormInfo(): FormGroup {
+    return this.fb.group({
+      etapa: ['', Validators.required],
+      informacao: ['', Validators.required],
+      valor: [''],
+      amostraHerda: [false],
+      obrigatorioEntrar: [false],
+      obrigatorioSair: [false],
+    });
+  }
+
+  private resequenciar(lista: InformacaoAtividadeModel[]): InformacaoAtividadeModel[] {
+    return lista.map((item, i) => ({ ...item, ordem: i + 1 }));
+  }
+
   irParaEdicao(): void {
     if (this.id) {
       this.router.navigate(['/tipos-atividades', this.id, 'editar']);
     }
   }
 
-  setTab(tab: 'detalhes' | 'fluxo' | 'informacoes'): void {
-    this.currentTab = tab;
+  setTab(tab: Aba): void {
+    this.currentTab.set(tab);
   }
 
+  // ---------------- Fluxo de etapas ----------------
   adicionarEtapa(): void {
-    if (!this.etapaSelecionada || this.fluxoEtapas.includes(this.etapaSelecionada)) {
+    if (this.formEtapa.invalid) {
+      this.formEtapa.markAllAsTouched();
       return;
     }
-    this.fluxoEtapas = [...this.fluxoEtapas, this.etapaSelecionada];
-    this.etapaSelecionada = '';
+    const v = this.formEtapa.getRawValue();
+    const nova: EtapaFluxoModel = {
+      etapaAnterior: (v.etapaAnterior || '').trim() || null,
+      etapaSeguinte: (v.etapaSeguinte || '').trim(),
+      finaliza: !!v.finaliza,
+      prazoConclusaoHoras: v.prazoConclusaoHoras === null || v.prazoConclusaoHoras === '' ? null : Number(v.prazoConclusaoHoras),
+      permiteAmostras: !!v.permiteAmostras,
+      situacaoInicialAmostra: (v.situacaoInicialAmostra || '').trim() || null,
+      permiteEditarAmostras: !!v.permiteEditarAmostras,
+      editaTemposEstimados: !!v.editaTemposEstimados,
+      obrigaConta: !!v.obrigaConta,
+    };
+    this.etapas.update((atual) => [...atual, nova]);
+    this.formEtapa.reset({
+      etapaAnterior: '', etapaSeguinte: '', finaliza: false, prazoConclusaoHoras: null,
+      permiteAmostras: false, situacaoInicialAmostra: '', permiteEditarAmostras: false,
+      editaTemposEstimados: false, obrigaConta: false,
+    });
   }
 
   removerEtapa(index: number): void {
-    this.fluxoEtapas = this.fluxoEtapas.filter((_, i) => i !== index);
+    this.editandoEtapa.set(null);
+    this.etapas.update((atual) => atual.filter((_, i) => i !== index));
   }
 
-  adicionarInformacao(): void {
-    if (!this.etapaInfoSelecionada || !this.informacaoSelecionada) {
+  private valoresParaEtapa(v: any): Omit<EtapaFluxoModel, 'id'> {
+    return {
+      etapaAnterior: (v.etapaAnterior || '').trim() || null,
+      etapaSeguinte: (v.etapaSeguinte || '').trim(),
+      finaliza: !!v.finaliza,
+      prazoConclusaoHoras: v.prazoConclusaoHoras === null || v.prazoConclusaoHoras === '' ? null : Number(v.prazoConclusaoHoras),
+      permiteAmostras: !!v.permiteAmostras,
+      situacaoInicialAmostra: (v.situacaoInicialAmostra || '').trim() || null,
+      permiteEditarAmostras: !!v.permiteEditarAmostras,
+      editaTemposEstimados: !!v.editaTemposEstimados,
+      obrigaConta: !!v.obrigaConta,
+    };
+  }
+
+  iniciarEdicaoEtapa(index: number): void {
+    const e = this.etapas()[index];
+    this.formEtapaEdicao.reset({
+      etapaAnterior: e.etapaAnterior ?? '',
+      etapaSeguinte: e.etapaSeguinte,
+      finaliza: e.finaliza,
+      prazoConclusaoHoras: e.prazoConclusaoHoras,
+      permiteAmostras: e.permiteAmostras,
+      situacaoInicialAmostra: e.situacaoInicialAmostra ?? '',
+      permiteEditarAmostras: e.permiteEditarAmostras,
+      editaTemposEstimados: e.editaTemposEstimados,
+      obrigaConta: e.obrigaConta,
+    });
+    this.editandoEtapa.set(index);
+  }
+
+  salvarEdicaoEtapa(): void {
+    const index = this.editandoEtapa();
+    if (index === null) return;
+    if (this.formEtapaEdicao.invalid) {
+      this.formEtapaEdicao.markAllAsTouched();
       return;
     }
+    const atualizada: EtapaFluxoModel = {
+      id: this.etapas()[index]?.id,
+      ...this.valoresParaEtapa(this.formEtapaEdicao.getRawValue()),
+    };
+    this.etapas.update((atual) => atual.map((item, i) => (i === index ? atualizada : item)));
+    this.editandoEtapa.set(null);
+  }
 
-    this.informacoes = [
-      ...this.informacoes,
-      {
-        etapa: this.etapaInfoSelecionada as InformacaoAtividadeModel['etapa'],
-        informacao: this.informacaoSelecionada as InformacaoAtividadeModel['informacao'],
-      },
-    ];
+  cancelarEdicaoEtapa(): void {
+    this.editandoEtapa.set(null);
+  }
 
-    this.etapaInfoSelecionada = '';
-    this.informacaoSelecionada = '';
+  // ---------------- Informações ----------------
+  adicionarInformacao(): void {
+    if (this.formInfo.invalid) {
+      this.formInfo.markAllAsTouched();
+      return;
+    }
+    const v = this.formInfo.getRawValue();
+    const nova: InformacaoAtividadeModel = {
+      ordem: this.informacoes().length + 1,
+      etapa: (v.etapa || '').trim(),
+      informacao: (v.informacao || '').trim(),
+      valor: (v.valor || '').trim() || null,
+      amostraHerda: !!v.amostraHerda,
+      obrigatorioEntrar: !!v.obrigatorioEntrar,
+      obrigatorioSair: !!v.obrigatorioSair,
+    };
+    this.informacoes.update((atual) => this.resequenciar([...atual, nova]));
+    this.formInfo.reset({
+      etapa: '', informacao: '', valor: '', amostraHerda: false,
+      obrigatorioEntrar: false, obrigatorioSair: false,
+    });
   }
 
   removerInformacao(index: number): void {
-    this.informacoes = this.informacoes.filter((_, i) => i !== index);
+    this.informacoes.update((atual) => this.resequenciar(atual.filter((_, i) => i !== index)));
   }
 
   cancelar(): void {
@@ -135,17 +267,24 @@ export class TipoAtividadeCadastro implements OnInit {
   }
 
   salvar(): void {
-    if (this.formAtividade.invalid || !this.formAtividade.get('tipo')?.value) {
-      this.formAtividade.markAllAsTouched();
-      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Preencha todos os campos obrigatórios.' });
+    if (this.formDetalhes.invalid) {
+      this.formDetalhes.markAllAsTouched();
+      this.currentTab.set('detalhes');
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Preencha a identificação (mínimo 3 caracteres).' });
+      return;
+    }
+    if (this.etapas().length === 0) {
+      this.currentTab.set('fluxo');
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Adicione ao menos uma etapa ao fluxo.' });
       return;
     }
 
     const payload: Omit<TipoAtividadeModel, 'id' | 'status'> = {
-      versao: this.formAtividade.get('versao')?.value,
-      tipo: this.formAtividade.get('tipo')?.value,
-      fluxoEtapas: this.fluxoEtapas,
-      informacoes: this.informacoes,
+      versao: this.formDetalhes.get('versao')?.value ?? 1,
+      identificacao: this.formDetalhes.get('identificacao')?.value,
+      prefixo: this.formDetalhes.get('prefixo')?.value || null,
+      etapas: this.etapas(),
+      informacoes: this.informacoes(),
     };
 
     const operacao = this.id
