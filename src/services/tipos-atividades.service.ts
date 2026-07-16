@@ -11,6 +11,7 @@ interface EtapaFluxoApi {
   etapa_anterior: string | null;
   etapa_seguinte: string;
   finaliza: boolean;
+  prazo_inicio_horas: number | null;
   prazo_conclusao_horas: number | null;
   permite_amostras: boolean;
   situacao_inicial_amostra: string | null;
@@ -46,6 +47,7 @@ function etapaParaModel(e: EtapaFluxoApi): EtapaFluxoModel {
     etapaAnterior: e.etapa_anterior,
     etapaSeguinte: e.etapa_seguinte,
     finaliza: e.finaliza,
+    prazoInicioHoras: e.prazo_inicio_horas,
     prazoConclusaoHoras: e.prazo_conclusao_horas,
     permiteAmostras: e.permite_amostras,
     situacaoInicialAmostra: e.situacao_inicial_amostra,
@@ -85,6 +87,7 @@ function etapaParaApi(e: EtapaFluxoModel): EtapaFluxoApi | Omit<EtapaFluxoApi, '
     etapa_anterior: e.etapaAnterior || null,
     etapa_seguinte: e.etapaSeguinte,
     finaliza: e.finaliza,
+    prazo_inicio_horas: e.prazoInicioHoras ?? null,
     prazo_conclusao_horas: e.prazoConclusaoHoras ?? null,
     permite_amostras: e.permiteAmostras,
     situacao_inicial_amostra: e.situacaoInicialAmostra || null,

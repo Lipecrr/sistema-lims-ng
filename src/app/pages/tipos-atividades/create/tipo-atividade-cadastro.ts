@@ -117,6 +117,7 @@ export class TipoAtividadeCadastro implements OnInit {
       etapaAnterior: [''],
       etapaSeguinte: ['', Validators.required],
       finaliza: [false],
+      prazoInicioHoras: [null],
       prazoConclusaoHoras: [null],
       permiteAmostras: [false],
       situacaoInicialAmostra: [''],
@@ -157,21 +158,10 @@ export class TipoAtividadeCadastro implements OnInit {
       this.formEtapa.markAllAsTouched();
       return;
     }
-    const v = this.formEtapa.getRawValue();
-    const nova: EtapaFluxoModel = {
-      etapaAnterior: (v.etapaAnterior || '').trim() || null,
-      etapaSeguinte: (v.etapaSeguinte || '').trim(),
-      finaliza: !!v.finaliza,
-      prazoConclusaoHoras: v.prazoConclusaoHoras === null || v.prazoConclusaoHoras === '' ? null : Number(v.prazoConclusaoHoras),
-      permiteAmostras: !!v.permiteAmostras,
-      situacaoInicialAmostra: (v.situacaoInicialAmostra || '').trim() || null,
-      permiteEditarAmostras: !!v.permiteEditarAmostras,
-      editaTemposEstimados: !!v.editaTemposEstimados,
-      obrigaConta: !!v.obrigaConta,
-    };
+    const nova: EtapaFluxoModel = this.valoresParaEtapa(this.formEtapa.getRawValue());
     this.etapas.update((atual) => [...atual, nova]);
     this.formEtapa.reset({
-      etapaAnterior: '', etapaSeguinte: '', finaliza: false, prazoConclusaoHoras: null,
+      etapaAnterior: '', etapaSeguinte: '', finaliza: false, prazoInicioHoras: null, prazoConclusaoHoras: null,
       permiteAmostras: false, situacaoInicialAmostra: '', permiteEditarAmostras: false,
       editaTemposEstimados: false, obrigaConta: false,
     });
@@ -187,6 +177,7 @@ export class TipoAtividadeCadastro implements OnInit {
       etapaAnterior: (v.etapaAnterior || '').trim() || null,
       etapaSeguinte: (v.etapaSeguinte || '').trim(),
       finaliza: !!v.finaliza,
+      prazoInicioHoras: v.prazoInicioHoras === null || v.prazoInicioHoras === '' ? null : Number(v.prazoInicioHoras),
       prazoConclusaoHoras: v.prazoConclusaoHoras === null || v.prazoConclusaoHoras === '' ? null : Number(v.prazoConclusaoHoras),
       permiteAmostras: !!v.permiteAmostras,
       situacaoInicialAmostra: (v.situacaoInicialAmostra || '').trim() || null,
@@ -202,6 +193,7 @@ export class TipoAtividadeCadastro implements OnInit {
       etapaAnterior: e.etapaAnterior ?? '',
       etapaSeguinte: e.etapaSeguinte,
       finaliza: e.finaliza,
+      prazoInicioHoras: e.prazoInicioHoras,
       prazoConclusaoHoras: e.prazoConclusaoHoras,
       permiteAmostras: e.permiteAmostras,
       situacaoInicialAmostra: e.situacaoInicialAmostra ?? '',

@@ -3,6 +3,7 @@ export interface EtapaFluxoModel {
   etapaAnterior: string | null;
   etapaSeguinte: string;
   finaliza: boolean;
+  prazoInicioHoras: number | null;
   prazoConclusaoHoras: number | null;
   permiteAmostras: boolean;
   situacaoInicialAmostra: string | null;

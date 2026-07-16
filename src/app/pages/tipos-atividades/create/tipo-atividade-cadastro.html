@@ -108,7 +108,12 @@
                 class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
             </div>
             <div>
-              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Prazo Conclusão (h)</label>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Prazo de Início (h)</label>
+              <input type="number" min="0" formControlName="prazoInicioHoras" placeholder="—"
+                class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
+            </div>
+            <div>
+              <label class="block text-xs font-semibold uppercase tracking-wide text-slate-500">Prazo de Conclusão (h)</label>
               <input type="number" min="0" formControlName="prazoConclusaoHoras" placeholder="—"
                 class="mt-1 w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-600" />
             </div>
@@ -153,7 +158,8 @@
                 <th class="px-4 py-3 font-semibold">Etapa Anterior</th>
                 <th class="px-4 py-3 font-semibold">Etapa Seguinte</th>
                 <th class="px-4 py-3 font-semibold">Finaliza?</th>
-                <th class="px-4 py-3 font-semibold">Prazo (h)</th>
+                <th class="px-4 py-3 font-semibold">Início (h)</th>
+                <th class="px-4 py-3 font-semibold">Conclusão (h)</th>
                 <th class="px-4 py-3 font-semibold">Permite Amostras?</th>
                 <th class="px-4 py-3 font-semibold">Situação Inicial</th>
                 <th class="px-4 py-3 font-semibold">Edita Amostras?</th>
@@ -169,6 +175,7 @@
                   <td class="px-4 py-3 text-slate-500">{{ e.etapaAnterior || '— (entrada)' }}</td>
                   <td class="px-4 py-3 font-medium text-slate-900">{{ e.etapaSeguinte }}</td>
                   <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.finaliza }"></ng-container></td>
+                  <td class="px-4 py-3">{{ e.prazoInicioHoras ?? '—' }}</td>
                   <td class="px-4 py-3">{{ e.prazoConclusaoHoras ?? '—' }}</td>
                   <td class="px-4 py-3 text-center"><ng-container *ngTemplateOutlet="flag; context: { on: e.permiteAmostras }"></ng-container></td>
                   <td class="px-4 py-3">{{ e.situacaoInicialAmostra || '—' }}</td>
@@ -191,6 +198,7 @@
                       class="w-36 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" />
                   </td>
                   <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="finaliza" class="h-4 w-4 rounded border-slate-300" /></td>
+                  <td class="px-3 py-2"><input type="number" min="0" formControlName="prazoInicioHoras" placeholder="—" class="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" /></td>
                   <td class="px-3 py-2"><input type="number" min="0" formControlName="prazoConclusaoHoras" placeholder="—" class="w-20 rounded-lg border border-slate-300 bg-white px-2 py-1 text-sm outline-none focus:border-blue-600" /></td>
                   <td class="px-3 py-2 text-center"><input type="checkbox" formControlName="permiteAmostras" class="h-4 w-4 rounded border-slate-300" /></td>
                   <td class="px-3 py-2">
@@ -209,7 +217,7 @@
                 </tr>
               </ng-container>
               <tr *ngIf="etapas().length === 0">
-                <td [attr.colspan]="modoVisualizacao ? 9 : 10" class="px-4 py-8 text-center text-sm text-slate-500">Nenhuma etapa adicionada ainda.</td>
+                <td [attr.colspan]="modoVisualizacao ? 10 : 11" class="px-4 py-8 text-center text-sm text-slate-500">Nenhuma etapa adicionada ainda.</td>
               </tr>
             </tbody>
           </table>
