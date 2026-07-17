@@ -55,7 +55,7 @@
   <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
     <div>
       <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Amostra Modelo</p>
-      <h1 class="text-3xl font-semibold tracking-tight text-slate-950">{{ titulo }}</h1>
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-950">{{ tituloAmostra() }}</h1>
       <p class="max-w-2xl text-sm leading-6 text-slate-600">Amostra base da proposta (situação Modelo) — servirá para gerar as amostras registradas.</p>
     </div>
     <div class="flex gap-3">
@@ -101,7 +101,7 @@
           </div>
           <div>
             <label class="block text-sm font-semibold text-slate-700">Situação</label>
-            <input type="text" [value]="amostra()?.situacao" disabled
+            <input type="text" [value]="amostra()?.situacao ?? 'Modelo'" disabled
               class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
           </div>
 
@@ -113,12 +113,15 @@
 
           <div>
             <label class="block text-sm font-semibold text-slate-700">Tipo de Amostra</label>
-            <input type="text" [value]="amostra()?.tipoAmostra" disabled
-              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+            <select formControlName="idTipoAmostra"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+              <option [ngValue]="null">— Selecione —</option>
+              <option *ngFor="let t of tiposAmostra()" [ngValue]="t.id">{{ t.tipo }}</option>
+            </select>
           </div>
           <div>
             <label class="block text-sm font-semibold text-slate-700">Conta <span class="text-slate-400">(herda da proposta)</span></label>
-            <input type="text" [value]="contaNome()" disabled
+            <input type="text" [value]="modo() === 'nova' ? 'Herda da proposta ao salvar' : contaNome()" disabled
               class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
           </div>
           <div>
@@ -130,11 +133,6 @@
             </select>
           </div>
 
-          <div class="md:col-span-2">
-            <label class="block text-sm font-semibold text-slate-700">Ponto de Coleta</label>
-            <input type="text" formControlName="pontoColeta" placeholder="Nome do ponto que será coletado"
-              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
-          </div>
           <div>
             <label class="block text-sm font-semibold text-slate-700">Data da Coleta</label>
             <input type="datetime-local" formControlName="dataColeta"
@@ -203,7 +201,7 @@
         </button>
         <button type="button" (click)="salvar()"
           class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
-          Salvar Alterações
+          {{ modo() === 'nova' ? 'Criar Amostra' : 'Salvar Alterações' }}
         </button>
       </div>
 

@@ -36,7 +36,6 @@ interface AmostraApi {
   identificacao: string | null;
   situacao: string;
   id_cliente: number | null;
-  ponto_coleta: string | null;
   data_coleta: string | null;
   motivo: string | null;
   amostra_modelo_id: number | null;
@@ -72,7 +71,6 @@ function paraModel(item: AmostraApi): AmostraModel {
     identificacao: item.identificacao,
     situacao: item.situacao,
     idCliente: item.id_cliente,
-    pontoColeta: item.ponto_coleta,
     dataColeta: item.data_coleta,
     motivo: item.motivo,
     amostraModeloId: item.amostra_modelo_id,
@@ -128,7 +126,6 @@ export class AmostrasService {
         tipo_amostra: payload.tipoAmostra,
         identificacao: payload.identificacao,
         id_cliente: payload.idCliente,
-        ponto_coleta: payload.pontoColeta,
         data_coleta: payload.dataColeta,
         motivo: payload.motivo,
         analises: analisesParaApi(payload.analises),
@@ -142,9 +139,10 @@ export class AmostrasService {
   atualizar(id: string | number, payload: AlterarAmostraPayload): Observable<void> {
     return this.http
       .put<void>(`${API_URL}/${id}`, {
+        id_tipo_amostra: payload.idTipoAmostra,
+        tipo_amostra: payload.tipoAmostra,
         identificacao: payload.identificacao,
         id_cliente: payload.idCliente,
-        ponto_coleta: payload.pontoColeta,
         data_coleta: payload.dataColeta,
         motivo: payload.motivo,
         analises: analisesParaApi(payload.analises),

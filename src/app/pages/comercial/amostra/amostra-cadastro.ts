@@ -3,17 +3,21 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { take } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { MessageService } from 'primeng/api';
 import { AmostraModel, AmostraAnaliseModel } from '@/models/amostra.model';
 import { ClienteResponseModel } from '@/models/cliente.model';
 import { MetodologiaModel } from '@/models/metodologia.model';
+import { TipoAmostraResponseModel } from '@/models/tipo-amostra.model';
 import { AmostrasService } from 'src/services/amostras.service';
 import { ClientesService } from 'src/services/clientes.service';
 import { MetodologiasListService } from 'src/services/metodologias-list.service';
+import { TiposAmostrasService } from 'src/services/tipos-amostras.service';
 import { matchFiltro } from '@/core/utils/filtro';
 
 type Aba = 'detalhes' | 'analises';
+type Modo = 'nova' | 'edit';
 
 interface AnaliseCatalogo {
   idMetodologiaAnalise: number;
@@ -40,14 +44,19 @@ export class AmostraCadastro implements OnInit {
   currentTab = signal<Aba>('detalhes');
   readonly motivos = MOTIVOS;
 
+  modo = signal<Modo>('edit');
   idProposta: string | null = null;
   idAmostra: string | null = null;
   carregando = signal(true);
   erro = signal(false);
+  tituloAmostra = signal('Amostra');
 
   form!: FormGroup;
   amostra = signal<AmostraModel | null>(null);
   analises = signal<AmostraAnaliseModel[]>([]);
+
+  private readonly tiposAmostrasService = inject(TiposAmostrasService);
+  tiposAmostra = toSignal(this.tiposAmostrasService.tipos$, { initialValue: [] as TipoAmostraResponseModel[] });
 
   private readonly clientesService = inject(ClientesService);
   clientes = toSignal(this.clientesService.clientes$, { initialValue: [] as ClienteResponseModel[] });
@@ -96,13 +105,19 @@ export class AmostraCadastro implements OnInit {
   ngOnInit(): void {
     this.idProposta = this.route.snapshot.paramMap.get('idProposta');
     this.idAmostra = this.route.snapshot.paramMap.get('idAmostra');
+    this.modo.set(this.route.snapshot.data['modo'] === 'nova' ? 'nova' : 'edit');
 
     this.form = this.fb.group({
+      idTipoAmostra: [null as number | null],
       identificacao: [''],
-      pontoColeta: [''],
       dataColeta: [''],
       motivo: [''],
     });
+
+    if (this.modo() === 'nova') {
+      this.prepararNova();
+      return;
+    }
 
     if (!this.idAmostra) {
       this.erro.set(true);
@@ -112,13 +127,31 @@ export class AmostraCadastro implements OnInit {
     this.carregar();
   }
 
+  private prepararNova(): void {
+    const tipoParam = this.route.snapshot.queryParamMap.get('tipo');
+    const idTipo = tipoParam ? Number(tipoParam) : null;
+    this.form.patchValue({ idTipoAmostra: idTipo });
+    this.tituloAmostra.set('Nova Amostra');
+
+    // Resolve nome do tipo (título) e motivo padrão quando os tipos carregarem.
+    this.tiposAmostrasService.tipos$.pipe(take(1)).subscribe((tipos) => {
+      const t = tipos.find((x) => x.id === idTipo);
+      if (t) {
+        this.form.patchValue({ motivo: t.motivo }, { emitEvent: false });
+        this.tituloAmostra.set(`Nova amostra — ${t.tipo}`);
+      }
+      this.carregando.set(false);
+    });
+  }
+
   private carregar(): void {
     this.service.obterPorId(this.idAmostra!).subscribe({
       next: (a) => {
         this.amostra.set(a);
+        this.tituloAmostra.set(`${a.tipoAmostra}${a.identificacao ? ' — ' + a.identificacao : ''}`);
         this.form.patchValue({
+          idTipoAmostra: a.idTipoAmostra,
           identificacao: a.identificacao ?? '',
-          pontoColeta: a.pontoColeta ?? '',
           dataColeta: a.dataColeta ? a.dataColeta.substring(0, 16) : '',
           motivo: a.motivo ?? '',
         });
@@ -134,12 +167,6 @@ export class AmostraCadastro implements OnInit {
 
   setTab(tab: Aba): void {
     this.currentTab.set(tab);
-  }
-
-  get titulo(): string {
-    const a = this.amostra();
-    if (!a) return 'Amostra';
-    return `${a.tipoAmostra}${a.identificacao ? ' — ' + a.identificacao : ''}`;
   }
 
   // ---------------- Análises ----------------
@@ -188,19 +215,54 @@ export class AmostraCadastro implements OnInit {
   }
 
   salvar(): void {
-    if (!this.idAmostra) return;
     const v = this.form.value;
+    const idTipo: number | null = v.idTipoAmostra ?? null;
+    const tipoNome = this.tiposAmostra().find((t) => t.id === idTipo)?.tipo ?? this.amostra()?.tipoAmostra ?? '';
+    if (!tipoNome) {
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Selecione o tipo de amostra.' });
+      return;
+    }
+
+    const analises = this.analises().map((a, i) => ({ ...a, ordem: i + 1 }));
+
+    if (this.modo() === 'nova') {
+      this.service
+        .criar({
+          idProposta: Number(this.idProposta),
+          idTipoAmostra: idTipo,
+          tipoAmostra: tipoNome,
+          identificacao: (v.identificacao || '').trim() || null,
+          idCliente: null, // herdado da proposta pelo backend
+          dataColeta: v.dataColeta || null,
+          motivo: v.motivo || null,
+          analises,
+        })
+        .subscribe({
+          next: (nova) => {
+            this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Amostra criada com sucesso.' });
+            setTimeout(() => this.router.navigate(['/comercial', this.idProposta, 'amostra', nova.id]), 800);
+          },
+          error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar a amostra.' }),
+        });
+      return;
+    }
+
     this.service
-      .atualizar(this.idAmostra, {
+      .atualizar(this.idAmostra!, {
+        idTipoAmostra: idTipo,
+        tipoAmostra: tipoNome,
         identificacao: (v.identificacao || '').trim() || null,
         idCliente: this.amostra()?.idCliente ?? null,
-        pontoColeta: (v.pontoColeta || '').trim() || null,
         dataColeta: v.dataColeta || null,
         motivo: v.motivo || null,
-        analises: this.analises().map((a, i) => ({ ...a, ordem: i + 1 })),
+        analises,
       })
       .subscribe({
-        next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Amostra salva com sucesso.' }),
+        next: () => {
+          const atual = this.amostra();
+          if (atual) this.amostra.set({ ...atual, idTipoAmostra: idTipo, tipoAmostra: tipoNome });
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Amostra salva com sucesso.' });
+        },
         error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar a amostra.' }),
       });
   }

@@ -383,26 +383,9 @@ export class PropostaCadastro implements OnInit {
 
   criarAmostraDoTipo(tipo: TipoAmostraResponseModel): void {
     if (!this.id) return;
-    this.amostrasService
-      .criar({
-        idProposta: Number(this.id),
-        idTipoAmostra: tipo.id,
-        tipoAmostra: tipo.tipo,
-        identificacao: null,
-        idCliente: this.formDetalhes.get('idCliente')?.value ?? null,
-        pontoColeta: null,
-        dataColeta: null,
-        motivo: tipo.motivo,
-        analises: [],
-      })
-      .subscribe({
-        next: (nova) => {
-          this.mostrarModalAmostra.set(false);
-          this.router.navigate(['/comercial', this.id, 'amostra', nova.id]);
-        },
-        error: () =>
-          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar a amostra.' }),
-      });
+    // Não grava aqui: abre a tela de nova amostra; o id só nasce ao Salvar.
+    this.mostrarModalAmostra.set(false);
+    this.router.navigate(['/comercial', this.id, 'amostra', 'nova'], { queryParams: { tipo: tipo.id } });
   }
 
   abrirAmostra(a: AmostraModel): void {

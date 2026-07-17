@@ -23,7 +23,6 @@ export interface AmostraModel {
   identificacao: string | null;
   situacao: string;
   idCliente: number | null;
-  pontoColeta: string | null;
   dataColeta: string | null;
   motivo: string | null;
   amostraModeloId: number | null;
@@ -37,16 +36,16 @@ export interface CriarAmostraPayload {
   tipoAmostra: string;
   identificacao: string | null;
   idCliente: number | null;
-  pontoColeta: string | null;
   dataColeta: string | null;
   motivo: string | null;
   analises: AmostraAnaliseModel[];
 }
 
 export interface AlterarAmostraPayload {
+  idTipoAmostra: number | null;
+  tipoAmostra: string;
   identificacao: string | null;
   idCliente: number | null;
-  pontoColeta: string | null;
   dataColeta: string | null;
   motivo: string | null;
   analises: AmostraAnaliseModel[];
