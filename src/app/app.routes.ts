@@ -42,5 +42,6 @@ export const routes: Routes = [
     { path: 'comercial', loadComponent: () => import('./pages/comercial/list/list.js').then((m) => m.List) },
     { path: 'comercial/nova', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro) },
     { path: 'comercial/:id/editar', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro), data: { modo: 'editar' } },
+    { path: 'comercial/:idProposta/amostra/:idAmostra', loadComponent: () => import('./pages/comercial/amostra/amostra-cadastro.js').then((m) => m.AmostraCadastro) },
     { path: 'comercial/:id', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro), data: { modo: 'visualizar' } },
 ];

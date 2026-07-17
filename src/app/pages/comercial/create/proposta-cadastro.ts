@@ -10,14 +10,18 @@ import { MessageService, ConfirmationService } from 'primeng/api';
 import { CriarPropostaPayload, PropostaPrecoModel } from '@/models/proposta.model';
 import { ClienteResponseModel } from '@/models/cliente.model';
 import { ItemPrecoResponseModel } from '@/models/item-preco.model';
+import { TipoAmostraResponseModel } from '@/models/tipo-amostra.model';
+import { AmostraModel } from '@/models/amostra.model';
 import { PropostasService } from 'src/services/propostas.service';
 import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
 import { InformacoesService } from 'src/services/informacoes.service';
 import { ClientesService } from 'src/services/clientes.service';
 import { ItensPrecoService } from 'src/services/itens-preco.service';
+import { TiposAmostrasService } from 'src/services/tipos-amostras.service';
+import { AmostrasService } from 'src/services/amostras.service';
 import { matchFiltro } from '@/core/utils/filtro';
 
-type Aba = 'detalhes' | 'informacoes' | 'precos';
+type Aba = 'detalhes' | 'informacoes' | 'precos' | 'amostras';
 
 interface CampoInfo {
   ordem: number;
@@ -81,6 +85,18 @@ export class PropostaCadastro implements OnInit {
   totalGeral = computed(() =>
     this.precos().reduce((soma, p) => soma + this.totalLinha(p), 0)
   );
+
+  // ---- Amostras (modelo) ----
+  private readonly tiposAmostrasService = inject(TiposAmostrasService);
+  private readonly amostrasService = inject(AmostrasService);
+  tiposAmostra = toSignal(this.tiposAmostrasService.tipos$, { initialValue: [] as TipoAmostraResponseModel[] });
+  amostras = signal<AmostraModel[]>([]);
+  mostrarModalAmostra = signal(false);
+  tipoAmostraBusca = signal('');
+  tiposAmostraFiltrados = computed(() => {
+    const termo = this.tipoAmostraBusca();
+    return this.tiposAmostra().filter((t) => t.status === 'Ativo' && matchFiltro(t.tipo, termo));
+  });
 
   id: string | null = null;
   modoVisualizacao = false;
@@ -216,11 +232,20 @@ export class PropostaCadastro implements OnInit {
           this.formInfos.disable();
         }
         this.carregando.set(false);
+        this.carregarAmostras();
       },
       error: () => {
         this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a proposta.' });
         this.carregando.set(false);
       },
+    });
+  }
+
+  private carregarAmostras(): void {
+    if (!this.id) return;
+    this.amostrasService.listarPorProposta(this.id).subscribe({
+      next: (lista) => this.amostras.set(lista),
+      error: () => this.amostras.set([]),
     });
   }
 
@@ -344,6 +369,64 @@ export class PropostaCadastro implements OnInit {
       preco: p.preco || 0,
       quantidade: p.quantidade || 0,
     }));
+  }
+
+  // ---------------- Amostras (modelo) ----------------
+  abrirModalAmostra(): void {
+    this.tipoAmostraBusca.set('');
+    this.mostrarModalAmostra.set(true);
+  }
+
+  fecharModalAmostra(): void {
+    this.mostrarModalAmostra.set(false);
+  }
+
+  criarAmostraDoTipo(tipo: TipoAmostraResponseModel): void {
+    if (!this.id) return;
+    this.amostrasService
+      .criar({
+        idProposta: Number(this.id),
+        idTipoAmostra: tipo.id,
+        tipoAmostra: tipo.tipo,
+        identificacao: null,
+        idCliente: this.formDetalhes.get('idCliente')?.value ?? null,
+        pontoColeta: null,
+        dataColeta: null,
+        motivo: tipo.motivo,
+        analises: [],
+      })
+      .subscribe({
+        next: (nova) => {
+          this.mostrarModalAmostra.set(false);
+          this.router.navigate(['/comercial', this.id, 'amostra', nova.id]);
+        },
+        error: () =>
+          this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar a amostra.' }),
+      });
+  }
+
+  abrirAmostra(a: AmostraModel): void {
+    this.router.navigate(['/comercial', this.id, 'amostra', a.id]);
+  }
+
+  removerAmostra(a: AmostraModel): void {
+    this.confirmationService.confirm({
+      message: `Remover a amostra "${a.identificacao || a.tipoAmostra}" (id ${a.id})?`,
+      header: 'Confirmar Remoção',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      acceptLabel: 'Sim, remover',
+      rejectLabel: 'Cancelar',
+      accept: () =>
+        this.amostrasService.deletar(a.id).subscribe({
+          next: () => {
+            this.amostras.set(this.amostras().filter((x) => x.id !== a.id));
+            this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Amostra removida.' });
+          },
+          error: () =>
+            this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível remover a amostra.' }),
+        }),
+    });
   }
 
   irParaEdicao(): void {

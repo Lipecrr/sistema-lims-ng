@@ -1,0 +1,212 @@
+<p-toast></p-toast>
+
+<!-- ============ MODAL: Adicionar Análises ============ -->
+<div *ngIf="mostrarModalAnalise()" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4" (click)="fecharModalAnalise()">
+  <div class="w-full max-w-4xl rounded-2xl bg-white p-6 shadow-2xl" (click)="$event.stopPropagation()">
+    <div class="flex items-center justify-between">
+      <h2 class="text-lg font-semibold text-slate-900">Adicionar Análises</h2>
+      <button type="button" (click)="fecharModalAnalise()" class="text-slate-400 hover:text-slate-700" aria-label="Fechar">
+        <i class="pi pi-times"></i>
+      </button>
+    </div>
+
+    <div class="mt-4">
+      <input type="text" [value]="analiseBusca()" (input)="analiseBusca.set($any($event.target).value)"
+        placeholder="Buscar por análise ou método  (use * como curinga, ex.: *benzeno)"
+        class="w-full rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+    </div>
+
+    <div class="mt-3 max-h-96 overflow-auto rounded-xl border border-slate-200">
+      <table class="w-full min-w-[640px] text-sm">
+        <thead class="sticky top-0 bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+          <tr>
+            <th class="px-4 py-2">Identificação</th>
+            <th class="px-4 py-2">Método de Análise</th>
+            <th class="px-4 py-2">Tipo de Método</th>
+            <th class="px-4 py-2">Unidade</th>
+            <th class="px-4 py-2"></th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          <tr *ngFor="let c of analisesFiltradas()" class="hover:bg-blue-50">
+            <td class="px-4 py-2 font-medium text-slate-900">{{ c.analise }}</td>
+            <td class="px-4 py-2 text-slate-700">{{ c.metodo }}</td>
+            <td class="px-4 py-2 text-slate-500">{{ c.tipoMetodo }}</td>
+            <td class="px-4 py-2 text-slate-500">{{ c.unidadeMedida }}</td>
+            <td class="px-4 py-2 text-right">
+              <button *ngIf="!jaAdicionada(c)" type="button" (click)="adicionarAnalise(c)"
+                class="rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white hover:bg-blue-700">Adicionar</button>
+              <span *ngIf="jaAdicionada(c)" class="text-xs font-medium text-emerald-600">✓ adicionada</span>
+            </td>
+          </tr>
+          <tr *ngIf="analisesFiltradas().length === 0">
+            <td colspan="5" class="px-4 py-6 text-center text-sm text-slate-400">
+              Nenhuma análise encontrada nos métodos cadastrados.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="mt-3 text-xs text-slate-500">As análises são puxadas de dentro de cada método (metodologia) — não o método inteiro.</p>
+  </div>
+</div>
+
+<div class="space-y-6 max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Amostra Modelo</p>
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-950">{{ titulo }}</h1>
+      <p class="max-w-2xl text-sm leading-6 text-slate-600">Amostra base da proposta (situação Modelo) — servirá para gerar as amostras registradas.</p>
+    </div>
+    <div class="flex gap-3">
+      <button type="button" (click)="voltar()"
+        class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        Voltar
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="erro()" class="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+    Não foi possível carregar esta amostra.
+  </div>
+
+  <div *ngIf="!erro()" class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <button type="button" (click)="setTab('detalhes')"
+        [class]="currentTab() === 'detalhes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
+        Detalhes
+      </button>
+      <button type="button" (click)="setTab('analises')"
+        [class]="currentTab() === 'analises' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
+        Análises
+      </button>
+    </div>
+
+    <div *ngIf="carregando()" class="mt-8 text-sm text-slate-500">Carregando amostra…</div>
+
+    <div *ngIf="!carregando()" class="mt-8 space-y-8">
+
+      <!-- ================= DETALHES ================= -->
+      <section *ngIf="currentTab() === 'detalhes'" [formGroup]="form">
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Id</label>
+            <input type="text" [value]="amostra()?.id ?? '—'" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Nº Amostra</label>
+            <input type="text" [value]="amostra()?.numero || '—'" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Situação</label>
+            <input type="text" [value]="amostra()?.situacao" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm font-semibold text-slate-700">Identificação</label>
+            <input type="text" formControlName="identificacao" placeholder="Nome/descrição da amostra"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Tipo de Amostra</label>
+            <input type="text" [value]="amostra()?.tipoAmostra" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Conta <span class="text-slate-400">(herda da proposta)</span></label>
+            <input type="text" [value]="contaNome()" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Motivo</label>
+            <select formControlName="motivo"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+              <option value="">— Selecione —</option>
+              <option *ngFor="let m of motivos" [value]="m">{{ m }}</option>
+            </select>
+          </div>
+
+          <div class="md:col-span-2">
+            <label class="block text-sm font-semibold text-slate-700">Ponto de Coleta</label>
+            <input type="text" formControlName="pontoColeta" placeholder="Nome do ponto que será coletado"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Data da Coleta</label>
+            <input type="datetime-local" formControlName="dataColeta"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= ANÁLISES ================= -->
+      <section *ngIf="currentTab() === 'analises'">
+        <div class="flex items-center justify-between gap-4">
+          <p class="text-sm text-slate-600">Análises desta amostra (puxadas de dentro dos métodos cadastrados).</p>
+          <button type="button" (click)="abrirModalAnalise()"
+            class="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+            <i class="pi pi-plus"></i> Adicionar por Análises
+          </button>
+        </div>
+
+        <div *ngIf="analises().length === 0" class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+          Nenhuma análise adicionada. Use “Adicionar por Análises”.
+        </div>
+
+        <div *ngIf="analises().length > 0" class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full min-w-[900px] text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-4 py-3">Ordem</th>
+                <th class="px-4 py-3">Análise</th>
+                <th class="px-4 py-3">Método de Análise</th>
+                <th class="px-4 py-3">Tipo de Método</th>
+                <th class="px-4 py-3">Unidade</th>
+                <th class="px-4 py-3 text-right">Incerteza</th>
+                <th class="px-4 py-3 text-right">LD</th>
+                <th class="px-4 py-3 text-right">LQ</th>
+                <th class="px-4 py-3">Grupo de Análise</th>
+                <th class="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let a of analises(); let i = index">
+                <td class="px-4 py-3 text-slate-500">{{ a.ordem }}</td>
+                <td class="px-4 py-3 font-medium text-slate-900">{{ a.analise }}</td>
+                <td class="px-4 py-3 text-slate-700">{{ a.metodo || '—' }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ a.tipoMetodo || '—' }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ a.unidadeMedida || '—' }}</td>
+                <td class="px-4 py-3 text-right text-slate-500">{{ a.incerteza ?? '—' }}</td>
+                <td class="px-4 py-3 text-right text-slate-500">{{ a.ld ?? '—' }}</td>
+                <td class="px-4 py-3 text-right text-slate-500">{{ a.lq ?? '—' }}</td>
+                <td class="px-4 py-3 text-slate-300 italic">a definir</td>
+                <td class="px-4 py-3 text-right">
+                  <button type="button" (click)="removerAnalise(i)" class="text-slate-400 transition hover:text-red-600" aria-label="Remover">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= AÇÕES ================= -->
+      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button type="button" (click)="voltar()"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          Cancelar
+        </button>
+        <button type="button" (click)="salvar()"
+          class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+          Salvar Alterações
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
