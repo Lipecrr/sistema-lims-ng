@@ -38,4 +38,9 @@ export const routes: Routes = [
     { path: 'informacoes/novo', loadComponent: () => import('./pages/informacoes/create/informacao-cadastro.js').then((m) => m.InformacaoCadastro) },
     { path: 'informacoes/:id/editar', loadComponent: () => import('./pages/informacoes/create/informacao-cadastro.js').then((m) => m.InformacaoCadastro), data: { modo: 'editar' } },
     { path: 'informacoes/:id', loadComponent: () => import('./pages/informacoes/create/informacao-cadastro.js').then((m) => m.InformacaoCadastro), data: { modo: 'visualizar' } },
+
+    { path: 'comercial', loadComponent: () => import('./pages/comercial/list/list.js').then((m) => m.List) },
+    { path: 'comercial/nova', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro) },
+    { path: 'comercial/:id/editar', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro), data: { modo: 'editar' } },
+    { path: 'comercial/:id', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro), data: { modo: 'visualizar' } },
 ];

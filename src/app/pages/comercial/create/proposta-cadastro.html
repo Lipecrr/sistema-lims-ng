@@ -1,0 +1,165 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<div class="space-y-6 max-w-6xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+    <div>
+      <p class="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">Comercial</p>
+      <h1 class="text-3xl font-semibold tracking-tight text-slate-950">{{ tituloPagina }}</h1>
+      <p class="max-w-2xl text-sm leading-6 text-slate-600">Proposta Comercial iniciada na etapa de elaboração.</p>
+    </div>
+    <div class="flex gap-3">
+      <button type="button" routerLink="/comercial"
+        class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+        Voltar
+      </button>
+      <button *ngIf="modoVisualizacao" type="button" (click)="irParaEdicao()"
+        class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+        <i class="pi pi-pencil"></i>
+        Editar
+      </button>
+    </div>
+  </div>
+
+  <div *ngIf="erroTipo()" class="rounded-2xl border border-red-200 bg-red-50 p-5 text-sm text-red-700">
+    Não encontrei o tipo de atividade "Proposta Comercial" ativo. Cadastre-o em Tipos de Atividade antes de criar propostas.
+  </div>
+
+  <div *ngIf="!erroTipo()" class="rounded-[28px] border border-slate-200 bg-white p-6 shadow-sm">
+    <div class="flex flex-col gap-3 sm:flex-row">
+      <button type="button" (click)="setTab('detalhes')"
+        [class]="currentTab() === 'detalhes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
+        Detalhes
+      </button>
+      <button type="button" (click)="setTab('informacoes')"
+        [class]="currentTab() === 'informacoes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
+        Informações
+      </button>
+    </div>
+
+    <div class="mt-8 space-y-8">
+
+      <!-- ================= DETALHES ================= -->
+      <section *ngIf="currentTab() === 'detalhes'" [formGroup]="formDetalhes">
+        <div class="grid gap-6 md:grid-cols-3">
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Id</label>
+            <input type="text" formControlName="id"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Nº Atividade</label>
+            <input type="text" formControlName="numero"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Etapa Atual</label>
+            <input type="text" [value]="etapaInicial()" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+
+          <div class="md:col-span-3">
+            <label class="block text-sm font-semibold text-slate-700">Identificação</label>
+            <input type="text" formControlName="identificacao" placeholder="Nome/descrição da proposta"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+            <p *ngIf="controle['identificacao'].invalid && controle['identificacao'].touched" class="mt-1 text-sm text-red-600">Informe a identificação (mínimo 2 caracteres).</p>
+          </div>
+
+          <!-- Cliente com busca (nome ou CNPJ, use * como curinga) -->
+          <div class="md:col-span-2 relative">
+            <label class="block text-sm font-semibold text-slate-700">Cliente (Conta)</label>
+            <div class="relative mt-2">
+              <input type="text" [value]="clienteBusca()" [disabled]="modoVisualizacao"
+                (input)="onBuscaCliente($any($event.target).value)" (focus)="mostrarResultados.set(true)" (blur)="fecharResultados()"
+                placeholder="Buscar por nome ou CNPJ  (use * como curinga, ex.: *alfa)"
+                class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 pr-10 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+              <button *ngIf="clienteBusca() && !modoVisualizacao" type="button" (click)="limparCliente()"
+                class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700" aria-label="Limpar">
+                <i class="pi pi-times"></i>
+              </button>
+              <ul *ngIf="mostrarResultados() && clientesFiltrados().length > 0"
+                class="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+                <li *ngFor="let c of clientesFiltrados()" (mousedown)="selecionarCliente(c)"
+                  class="cursor-pointer px-4 py-2 text-sm hover:bg-slate-100">
+                  <div class="font-medium text-slate-900">{{ c.nome_empresa_nome_pf }}</div>
+                  <div class="text-xs text-slate-500">{{ c.cnpj_cpf }}</div>
+                </li>
+              </ul>
+              <div *ngIf="mostrarResultados() && clienteBusca() && clientesFiltrados().length === 0"
+                class="absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 shadow-lg">
+                Nenhum cliente encontrado.
+              </div>
+            </div>
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Responsável</label>
+            <input type="text" [value]="'Usuário logado (pendente de login)'" disabled title="Será o usuário que criar a PC quando houver login"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-500 outline-none" />
+          </div>
+
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Tipo de Atividade</label>
+            <input type="text" [value]="'Proposta Comercial'" disabled
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Execução <span class="text-slate-400">(criação)</span></label>
+            <input type="datetime-local" formControlName="dataExecucao"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-100 px-4 py-3 text-sm text-slate-700 outline-none" />
+          </div>
+          <div>
+            <label class="block text-sm font-semibold text-slate-700">Conclusão <span class="text-slate-400">(auto pela validade, editável)</span></label>
+            <input type="datetime-local" formControlName="dataConclusao"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= INFORMAÇÕES ================= -->
+      <section *ngIf="currentTab() === 'informacoes'" [formGroup]="formInfos">
+        <div *ngIf="carregando()" class="text-sm text-slate-500">Carregando informações do tipo de atividade…</div>
+        <div *ngIf="!carregando() && camposInfo().length === 0" class="text-sm text-slate-500">Nenhuma informação configurada para a etapa {{ etapaInicial() }}.</div>
+
+        <div class="grid gap-6 md:grid-cols-2">
+          <div *ngFor="let campo of camposInfo()">
+            <label class="block text-sm font-semibold text-slate-700">
+              {{ campo.informacao }}
+              <span *ngIf="campo.obrigatorio" class="text-red-600">*</span>
+            </label>
+
+            <select *ngIf="campo.opcoes.length > 0 && !campo.valorLivre" [formControlName]="campo.controlName"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100">
+              <option value="">— Selecione —</option>
+              <option *ngFor="let op of campo.opcoes" [value]="op">{{ op }}</option>
+            </select>
+
+            <input *ngIf="!(campo.opcoes.length > 0 && !campo.valorLivre)" type="text" [formControlName]="campo.controlName"
+              [attr.list]="campo.opcoes.length > 0 ? 'opts_' + campo.controlName : null"
+              placeholder="Preencher"
+              class="mt-2 w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+            <datalist *ngIf="campo.opcoes.length > 0 && campo.valorLivre" [id]="'opts_' + campo.controlName">
+              <option *ngFor="let op of campo.opcoes" [value]="op"></option>
+            </datalist>
+
+            <p *ngIf="formInfos.get(campo.controlName)?.invalid && formInfos.get(campo.controlName)?.touched" class="mt-1 text-sm text-red-600">
+              Campo obrigatório.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= AÇÕES ================= -->
+      <div *ngIf="!modoVisualizacao" class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+        <button type="button" (click)="cancelar()"
+          class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
+          Cancelar
+        </button>
+        <button type="button" (click)="salvar()"
+          class="inline-flex items-center justify-center rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+          {{ id ? 'Salvar Alterações' : 'Criar Proposta' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

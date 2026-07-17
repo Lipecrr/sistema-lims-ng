@@ -368,14 +368,10 @@ id: string | null = null;
         await this.service.atualizar(this.id, dados, this.codigoExistente, this.obsoletoExistente);
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Metodologia de Análise atualizada com sucesso!' });
       } else {
-        await this.service.save(dados);
+        const criado = await this.service.save(dados);
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Metodologia de Análise salva com sucesso!' });
+        setTimeout(() => this.router.navigate(['/metodologias', criado.id, 'editar']), 1000);
       }
-
-      // Aguarda um pouco para exibir a mensagem antes de navegar
-      setTimeout(() => {
-        this.router.navigate(['/metodologias']);
-      }, 1500);
     } catch (error) {
       this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Erro ao salvar a metodologia. Tente novamente.' });
       console.error('Erro ao salvar:', error);

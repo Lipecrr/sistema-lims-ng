@@ -288,7 +288,7 @@ export class ColaboradorCadastro implements OnInit {
         });
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Colaborador atualizado com sucesso.' });
       } else {
-        await this.colaboradoresService.addColaborador({
+        const criado = await this.colaboradoresService.addColaborador({
           nome_completo: valores.nomeCompleto,
           cpf: valores.cpf,
           email: valores.email,
@@ -302,9 +302,8 @@ export class ColaboradorCadastro implements OnInit {
           forcar_troca_senha: valores.forcarTrocaSenha,
         });
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Colaborador salvo com sucesso.' });
+        setTimeout(() => this.router.navigate(['/colaboradores', criado.id, 'editar']), 1000);
       }
-
-      setTimeout(() => this.router.navigate(['/colaboradores']), 1200);
     } catch {
       this.messageService.add({
         severity: 'error',

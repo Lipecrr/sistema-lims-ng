@@ -2,7 +2,6 @@ import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { map } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -147,29 +146,30 @@ export class ItemPrecoCadastro implements OnInit {
       tipo: this.itemPrecoForm.value.tipo,
     };
 
-    const operacao = this.id
-      ? this.itensPrecoService.atualizar(this.id, payload)
-      : this.itensPrecoService.addItemPreco(payload).pipe(map(() => undefined));
+    const erro = () => this.messageService.add({
+      severity: 'error',
+      summary: 'Erro',
+      detail: 'Não foi possível salvar o item de preço. Tente novamente.',
+    });
 
-    operacao.subscribe({
-      next: () => {
+    if (this.id) {
+      this.itensPrecoService.atualizar(this.id, payload).subscribe({
+        next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Item de preço atualizado com sucesso!' }),
+        error: erro,
+      });
+      return;
+    }
+
+    this.itensPrecoService.addItemPreco(payload).subscribe({
+      next: (criado) => {
         this.messageService.add({
           severity: 'success',
           summary: 'Sucesso',
-          detail: this.id ? 'Item de preço atualizado com sucesso!' : 'Item de preço cadastrado com sucesso!',
+          detail: 'Item de preço cadastrado com sucesso!',
         });
-
-        setTimeout(() => {
-          this.router.navigate(['/itens-preco']);
-        }, 1500);
+        setTimeout(() => this.router.navigate(['/itens-preco', criado.id, 'editar']), 1000);
       },
-      error: () => {
-        this.messageService.add({
-          severity: 'error',
-          summary: 'Erro',
-          detail: 'Não foi possível salvar o item de preço. Tente novamente.',
-        });
-      },
+      error: erro,
     });
   }
 }

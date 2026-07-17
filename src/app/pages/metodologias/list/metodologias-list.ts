@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { matchFiltro } from '@/core/utils/filtro';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
@@ -57,7 +58,7 @@ export class MetodologiasList {
       return items.filter((item) => {
         const normalized = `${item.codigo} ${item.nome} ${item.norma}`.toLowerCase();
         const query = filter.search.trim().toLowerCase();
-        if (query && !normalized.includes(query)) {
+        if (!matchFiltro(normalized, query)) {
           return false;
         }
         if (filter.setor && item.setor !== filter.setor) {

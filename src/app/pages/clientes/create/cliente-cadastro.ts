@@ -397,13 +397,10 @@ export class ClienteCadastro implements OnInit {
         await this.clientesService.atualizar(this.id, payload);
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente atualizado com sucesso!' });
       } else {
-        await this.clientesService.addCliente(payload);
+        const criado = await this.clientesService.addCliente(payload);
         this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Cliente cadastrado com sucesso!' });
+        setTimeout(() => this.router.navigate(['/clientes', criado.id, 'editar']), 1000);
       }
-
-      setTimeout(() => {
-        this.router.navigate(['/clientes']);
-      }, 1500);
     } catch {
       this.messageService.add({
         severity: 'error',

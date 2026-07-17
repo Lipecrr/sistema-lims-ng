@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { matchFiltro } from '@/core/utils/filtro';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { BehaviorSubject, combineLatest, map, Observable } from 'rxjs';
@@ -58,7 +59,7 @@ export class ItensPrecoList {
       return items.filter((item) => {
         const query = filter.search.trim().toLowerCase();
         const normalized = `${item.identificacao} ${item.tipo}`.toLowerCase();
-        if (query && !normalized.includes(query)) {
+        if (!matchFiltro(normalized, query)) {
           return false;
         }
 

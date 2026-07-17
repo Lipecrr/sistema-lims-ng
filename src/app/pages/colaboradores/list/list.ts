@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { matchFiltro } from '@/core/utils/filtro';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { combineLatest, map, Observable, BehaviorSubject } from 'rxjs';
@@ -53,7 +54,7 @@ export class List {
       return items.filter((colaborador) => {
         const query = filter.search.trim().toLowerCase();
         const normalized = `${colaborador.nome} ${colaborador.cargo} ${colaborador.departamento}`.toLowerCase();
-        if (query && !normalized.includes(query)) {
+        if (!matchFiltro(normalized, query)) {
           return false;
         }
         if (filter.status && colaborador.status !== filter.status) {

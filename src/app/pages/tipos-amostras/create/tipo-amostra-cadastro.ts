@@ -2,7 +2,6 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { map } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -102,22 +101,21 @@ export class TipoAmostraCadastro implements OnInit {
     }
 
     const valores = this.formAmostra.getRawValue();
-    const operacao = this.id
-      ? this.service.atualizar(this.id, valores)
-      : this.service.addTipoAmostra(valores).pipe(map(() => undefined));
+    const erro = () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar o tipo de amostra. Tente novamente.' });
 
-    operacao.subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.id ? 'Tipo de amostra atualizado com sucesso.' : 'Tipo de amostra cadastrado com sucesso.',
-        });
-        setTimeout(() => this.router.navigate(['/tipos-amostras']), 1200);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar o tipo de amostra. Tente novamente.' });
-      },
-    });
+    if (this.id) {
+      this.service.atualizar(this.id, valores).subscribe({
+        next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Tipo de amostra atualizado com sucesso.' }),
+        error: erro,
+      });
+    } else {
+      this.service.addTipoAmostra(valores).subscribe({
+        next: (criado) => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Tipo de amostra cadastrado com sucesso.' });
+          setTimeout(() => this.router.navigate(['/tipos-amostras', criado.id, 'editar']), 1000);
+        },
+        error: erro,
+      });
+    }
   }
 }

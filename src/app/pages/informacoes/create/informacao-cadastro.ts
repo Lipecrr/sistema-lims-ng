@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { map } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -165,22 +164,21 @@ export class InformacaoCadastro implements OnInit {
       opcoes: this.opcoes(),
     };
 
-    const operacao = this.id
-      ? this.service.atualizar(this.id, payload)
-      : this.service.adicionar(payload).pipe(map(() => undefined));
+    const erro = () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar a informação. Tente novamente.' });
 
-    operacao.subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.id ? 'Informação atualizada com sucesso.' : 'Informação salva com sucesso.',
-        });
-        setTimeout(() => this.router.navigate(['/informacoes']), 1200);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar a informação. Tente novamente.' });
-      },
-    });
+    if (this.id) {
+      this.service.atualizar(this.id, payload).subscribe({
+        next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Informação atualizada com sucesso.' }),
+        error: erro,
+      });
+    } else {
+      this.service.adicionar(payload).subscribe({
+        next: (criada) => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Informação salva com sucesso.' });
+          setTimeout(() => this.router.navigate(['/informacoes', criada.id, 'editar']), 1000);
+        },
+        error: erro,
+      });
+    }
   }
 }

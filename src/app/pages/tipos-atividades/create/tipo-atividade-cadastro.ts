@@ -3,7 +3,6 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { map } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
@@ -333,22 +332,21 @@ export class TipoAtividadeCadastro implements OnInit {
       informacoes: this.informacoes(),
     };
 
-    const operacao = this.id
-      ? this.service.atualizar(this.id, payload)
-      : this.service.addTipoAtividade(payload).pipe(map(() => undefined));
+    const erro = () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar o tipo de atividade. Tente novamente.' });
 
-    operacao.subscribe({
-      next: () => {
-        this.messageService.add({
-          severity: 'success',
-          summary: 'Sucesso',
-          detail: this.id ? 'Tipo de atividade atualizado com sucesso.' : 'Tipo de atividade salvo com sucesso.',
-        });
-        setTimeout(() => this.router.navigate(['/tipos-atividades']), 1200);
-      },
-      error: () => {
-        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar o tipo de atividade. Tente novamente.' });
-      },
-    });
+    if (this.id) {
+      this.service.atualizar(this.id, payload).subscribe({
+        next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Tipo de atividade atualizado com sucesso.' }),
+        error: erro,
+      });
+    } else {
+      this.service.addTipoAtividade(payload).subscribe({
+        next: (criado) => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Tipo de atividade salvo com sucesso.' });
+          setTimeout(() => this.router.navigate(['/tipos-atividades', criado.id, 'editar']), 1000);
+        },
+        error: erro,
+      });
+    }
   }
 }

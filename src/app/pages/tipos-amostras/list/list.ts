@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { matchFiltro } from '@/core/utils/filtro';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { BehaviorSubject, combineLatest, map } from 'rxjs';
@@ -80,7 +81,7 @@ export class List {
     const query = filter.search.trim().toLowerCase();
 
     return items.filter((item) => {
-      if (query && !`${item.tipo} ${item.motivo}`.toLowerCase().includes(query)) {
+      if (!matchFiltro(`${item.tipo} ${item.motivo}`, query)) {
         return false;
       }
 

@@ -1,0 +1,330 @@
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { CommonModule } from '@angular/common';
+import { FormBuilder, FormControl, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { combineLatest, take } from 'rxjs';
+import { ToastModule } from 'primeng/toast';
+import { ConfirmDialogModule } from 'primeng/confirmdialog';
+import { MessageService, ConfirmationService } from 'primeng/api';
+import { CriarPropostaPayload } from '@/models/proposta.model';
+import { ClienteResponseModel } from '@/models/cliente.model';
+import { PropostasService } from 'src/services/propostas.service';
+import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
+import { InformacoesService } from 'src/services/informacoes.service';
+import { ClientesService } from 'src/services/clientes.service';
+import { matchFiltro } from '@/core/utils/filtro';
+
+type Aba = 'detalhes' | 'informacoes';
+
+interface CampoInfo {
+  ordem: number;
+  etapa: string;
+  informacao: string;
+  obrigatorio: boolean;
+  opcoes: string[];
+  valorLivre: boolean;
+  controlName: string;
+}
+
+const NOME_TIPO_PROPOSTA = 'Proposta Comercial';
+const NOME_INFO_VALIDADE = 'Validade da Proposta';
+
+@Component({
+  selector: 'app-proposta-cadastro',
+  standalone: true,
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, RouterModule, ToastModule, ConfirmDialogModule],
+  providers: [MessageService, ConfirmationService],
+  templateUrl: './proposta-cadastro.html',
+})
+export class PropostaCadastro implements OnInit {
+  currentTab = signal<Aba>('detalhes');
+
+  formDetalhes!: FormGroup;
+  formInfos = new FormGroup({});
+
+  camposInfo = signal<CampoInfo[]>([]);
+  private validadeControlName: string | null = null;
+
+  idTipoAtividade = signal<number | null>(null);
+  etapaInicial = signal<string>('Elaboração');
+  carregando = signal<boolean>(true);
+  erroTipo = signal<boolean>(false);
+
+  // ---- Busca de cliente ----
+  private readonly clientesService = inject(ClientesService);
+  clientesLista = toSignal(this.clientesService.clientes$, { initialValue: [] as ClienteResponseModel[] });
+  clienteBusca = signal('');
+  clienteSelecionado = signal<ClienteResponseModel | null>(null);
+  mostrarResultados = signal(false);
+  clientesFiltrados = computed(() => {
+    const termo = this.clienteBusca();
+    return this.clientesLista()
+      .filter((c) => matchFiltro(c.nome_empresa_nome_pf, termo) || matchFiltro(c.cnpj_cpf, termo))
+      .slice(0, 12);
+  });
+
+  id: string | null = null;
+  modoVisualizacao = false;
+
+  private readonly route = inject(ActivatedRoute);
+  private readonly messageService = inject(MessageService);
+  private readonly confirmationService = inject(ConfirmationService);
+
+  get controle() {
+    return this.formDetalhes.controls;
+  }
+
+  get tituloPagina(): string {
+    if (this.modoVisualizacao) return 'Visualizar Proposta';
+    return this.id ? 'Editar Proposta' : 'Nova Proposta Comercial';
+  }
+
+  constructor(
+    private readonly fb: FormBuilder,
+    private readonly router: Router,
+    private readonly service: PropostasService,
+    private readonly tiposService: TiposAtividadesService,
+    private readonly informacoesService: InformacoesService,
+  ) {}
+
+  ngOnInit(): void {
+    this.formDetalhes = this.fb.group({
+      id: [{ value: '—', disabled: true }],
+      numero: [{ value: '—', disabled: true }],
+      identificacao: ['', [Validators.required, Validators.minLength(2)]],
+      idCliente: [null],
+      dataExecucao: [{ value: this.agora(), disabled: true }],
+      dataConclusao: [''],
+    });
+
+    this.id = this.route.snapshot.paramMap.get('id');
+    this.modoVisualizacao = this.route.snapshot.data['modo'] === 'visualizar';
+
+    combineLatest([this.tiposService.tipos$, this.informacoesService.lista$])
+      .pipe(take(1))
+      .subscribe({
+        next: ([tipos, catalogo]) => {
+          const pc = tipos.find((t) => t.identificacao === NOME_TIPO_PROPOSTA && t.status === 'Ativo')
+            ?? tipos.find((t) => t.identificacao === NOME_TIPO_PROPOSTA);
+          if (!pc) {
+            this.erroTipo.set(true);
+            this.carregando.set(false);
+            return;
+          }
+          this.idTipoAtividade.set(pc.id);
+          const entrada = pc.etapas.find((e) => !e.etapaAnterior);
+          const etapa = entrada?.etapaSeguinte ?? 'Elaboração';
+          this.etapaInicial.set(etapa);
+
+          const catMap = new Map(catalogo.map((c) => [c.identificacao, c]));
+          const campos = pc.informacoes
+            .filter((i) => i.etapa === etapa)
+            .sort((a, b) => a.ordem - b.ordem)
+            .map((i, idx): CampoInfo => {
+              const cat = catMap.get(i.informacao);
+              return {
+                ordem: i.ordem,
+                etapa: i.etapa,
+                informacao: i.informacao,
+                obrigatorio: i.obrigatorioEntrar,
+                opcoes: cat ? cat.opcoes.map((o) => o.valor) : [],
+                valorLivre: cat ? cat.valorLivre : true,
+                controlName: `info_${idx}`,
+              };
+            });
+
+          const grupo: Record<string, FormControl> = {};
+          for (const c of campos) {
+            const original = pc.informacoes.find((i) => i.informacao === c.informacao && i.ordem === c.ordem);
+            grupo[c.controlName] = new FormControl(original?.valor ?? '', c.obrigatorio ? [Validators.required] : []);
+            if (c.informacao === NOME_INFO_VALIDADE) this.validadeControlName = c.controlName;
+          }
+          this.formInfos = new FormGroup(grupo);
+          this.camposInfo.set(campos);
+
+          // Conclusão = execução + validade (recalcula quando a validade muda)
+          if (this.validadeControlName) {
+            this.formInfos.get(this.validadeControlName)!.valueChanges.subscribe(() => this.recalcularConclusao());
+          }
+          this.recalcularConclusao();
+
+          if (this.id) {
+            this.carregarProposta();
+          } else {
+            this.carregando.set(false);
+          }
+        },
+        error: () => {
+          this.erroTipo.set(true);
+          this.carregando.set(false);
+        },
+      });
+  }
+
+  private carregarProposta(): void {
+    this.service.obterPorId(this.id!).subscribe({
+      next: (p) => {
+        this.formDetalhes.patchValue({
+          id: p.id,
+          numero: p.numero,
+          identificacao: p.identificacao,
+          idCliente: p.idCliente,
+          dataExecucao: p.dataExecucao ? p.dataExecucao.substring(0, 16) : this.agora(),
+          dataConclusao: p.dataConclusao ? p.dataConclusao.substring(0, 16) : '',
+        });
+        const cli = this.clientesLista().find((c) => c.id === p.idCliente) ?? null;
+        this.clienteSelecionado.set(cli);
+        this.clienteBusca.set(cli ? cli.nome_empresa_nome_pf : '');
+        for (const campo of this.camposInfo()) {
+          const salva = p.informacoes.find((i) => i.informacao === campo.informacao);
+          if (salva) this.formInfos.get(campo.controlName)?.setValue(salva.valor ?? '', { emitEvent: false });
+        }
+        if (this.modoVisualizacao) {
+          this.formDetalhes.disable();
+          this.formInfos.disable();
+        }
+        this.carregando.set(false);
+      },
+      error: () => {
+        this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível carregar a proposta.' });
+        this.carregando.set(false);
+      },
+    });
+  }
+
+  // ---------------- Datas ----------------
+  private agora(): string {
+    return this.toDatetimeLocal(new Date());
+  }
+
+  private toDatetimeLocal(d: Date): string {
+    const pad = (n: number) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  private recalcularConclusao(): void {
+    if (this.modoVisualizacao) return;
+    const execucao = this.formDetalhes?.get('dataExecucao')?.value;
+    const validade = this.validadeControlName ? this.formInfos.get(this.validadeControlName)?.value : null;
+    if (!execucao) return;
+    const base = new Date(execucao);
+    if (isNaN(base.getTime())) return;
+    const v = (validade || '').toString().toLowerCase().trim();
+    const m = v.match(/(\d+)\s*(dia|mes|mês|ano)/);
+    const d = new Date(base);
+    if (m) {
+      const qtd = parseInt(m[1], 10);
+      const unidade = m[2];
+      if (unidade.startsWith('dia')) d.setDate(d.getDate() + qtd);
+      else if (unidade.startsWith('me') || unidade.startsWith('mê')) d.setMonth(d.getMonth() + qtd);
+      else if (unidade.startsWith('ano')) d.setFullYear(d.getFullYear() + qtd);
+    }
+    this.formDetalhes.get('dataConclusao')?.setValue(this.toDatetimeLocal(d));
+  }
+
+  // ---------------- Cliente (busca) ----------------
+  onBuscaCliente(texto: string): void {
+    this.clienteBusca.set(texto);
+    this.mostrarResultados.set(true);
+    if (this.clienteSelecionado() && texto !== this.clienteSelecionado()!.nome_empresa_nome_pf) {
+      this.clienteSelecionado.set(null);
+      this.formDetalhes.get('idCliente')?.setValue(null);
+    }
+  }
+
+  selecionarCliente(c: ClienteResponseModel): void {
+    this.clienteSelecionado.set(c);
+    this.clienteBusca.set(c.nome_empresa_nome_pf);
+    this.formDetalhes.get('idCliente')?.setValue(c.id);
+    this.mostrarResultados.set(false);
+  }
+
+  limparCliente(): void {
+    this.clienteSelecionado.set(null);
+    this.clienteBusca.set('');
+    this.formDetalhes.get('idCliente')?.setValue(null);
+    this.mostrarResultados.set(false);
+  }
+
+  fecharResultados(): void {
+    setTimeout(() => this.mostrarResultados.set(false), 150);
+  }
+
+  irParaEdicao(): void {
+    if (this.id) this.router.navigate(['/comercial', this.id, 'editar']);
+  }
+
+  setTab(tab: Aba): void {
+    this.currentTab.set(tab);
+  }
+
+  private montarInformacoes() {
+    return this.camposInfo().map((c) => ({
+      ordem: c.ordem,
+      etapa: c.etapa,
+      informacao: c.informacao,
+      valor: (this.formInfos.get(c.controlName)?.value || '').toString().trim() || null,
+    }));
+  }
+
+  cancelar(): void {
+    this.confirmationService.confirm({
+      message: 'Deseja realmente descartar as alterações?',
+      header: 'Confirmar Descarte',
+      icon: 'pi pi-exclamation-triangle',
+      acceptButtonStyleClass: 'p-button-danger',
+      acceptLabel: 'Sim, descartar',
+      rejectLabel: 'Cancelar',
+      accept: () => this.router.navigate(['/comercial']),
+    });
+  }
+
+  salvar(): void {
+    if (this.formDetalhes.invalid) {
+      this.formDetalhes.markAllAsTouched();
+      this.currentTab.set('detalhes');
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Preencha a identificação da proposta.' });
+      return;
+    }
+    if (this.formInfos.invalid) {
+      this.formInfos.markAllAsTouched();
+      this.currentTab.set('informacoes');
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Preencha as informações obrigatórias antes de salvar.' });
+      return;
+    }
+
+    const idTipo = this.idTipoAtividade();
+    if (idTipo === null) {
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Tipo de atividade "Proposta Comercial" não encontrado.' });
+      return;
+    }
+
+    const payload: CriarPropostaPayload = {
+      idTipoAtividade: idTipo,
+      identificacao: this.formDetalhes.get('identificacao')?.value,
+      idCliente: this.formDetalhes.get('idCliente')?.value ?? null,
+      idResponsavel: null, // definido pelo usuário logado (pendente de login)
+      dataExecucao: this.formDetalhes.get('dataExecucao')?.value || null,
+      dataConclusao: this.formDetalhes.get('dataConclusao')?.value || null,
+      informacoes: this.montarInformacoes(),
+    };
+
+    const erro = () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar a proposta. Tente novamente.' });
+
+    if (this.id) {
+      this.service.atualizar(this.id, payload).subscribe({
+        next: () => this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Proposta atualizada com sucesso.' }),
+        error: erro,
+      });
+    } else {
+      this.service.criar(payload).subscribe({
+        next: (criada) => {
+          this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Proposta criada com sucesso.' });
+          setTimeout(() => this.router.navigate(['/comercial', criada.id, 'editar']), 1000);
+        },
+        error: erro,
+      });
+    }
+  }
+}
