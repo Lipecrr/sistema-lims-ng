@@ -16,8 +16,8 @@ import { MetodologiasListService } from 'src/services/metodologias-list.service'
 import { TiposAmostrasService } from 'src/services/tipos-amostras.service';
 import { matchFiltro } from '@/core/utils/filtro';
 
-type Aba = 'detalhes' | 'analises';
-type Modo = 'nova' | 'edit';
+type Aba = 'detalhes' | 'analises' | 'embalagens';
+type Modo = 'nova' | 'edit' | 'visualizar';
 
 interface AnaliseCatalogo {
   idMetodologiaAnalise: number;
@@ -54,6 +54,9 @@ export class AmostraCadastro implements OnInit {
   form!: FormGroup;
   amostra = signal<AmostraModel | null>(null);
   analises = signal<AmostraAnaliseModel[]>([]);
+  custoAmostra = computed(() =>
+    this.analises().reduce((s, a) => s + this.totalLinhaAnalise(a), 0)
+  );
 
   private readonly tiposAmostrasService = inject(TiposAmostrasService);
   tiposAmostra = toSignal(this.tiposAmostrasService.tipos$, { initialValue: [] as TipoAmostraResponseModel[] });
@@ -105,7 +108,8 @@ export class AmostraCadastro implements OnInit {
   ngOnInit(): void {
     this.idProposta = this.route.snapshot.paramMap.get('idProposta');
     this.idAmostra = this.route.snapshot.paramMap.get('idAmostra');
-    this.modo.set(this.route.snapshot.data['modo'] === 'nova' ? 'nova' : 'edit');
+    const modoData = this.route.snapshot.data['modo'];
+    this.modo.set(modoData === 'nova' ? 'nova' : modoData === 'edit' ? 'edit' : 'visualizar');
 
     this.form = this.fb.group({
       idTipoAmostra: [null as number | null],
@@ -156,6 +160,7 @@ export class AmostraCadastro implements OnInit {
           motivo: a.motivo ?? '',
         });
         this.analises.set([...a.analises].sort((x, y) => x.ordem - y.ordem));
+        if (this.modo() === 'visualizar') this.form.disable({ emitEvent: false });
         this.carregando.set(false);
       },
       error: () => {
@@ -167,6 +172,10 @@ export class AmostraCadastro implements OnInit {
 
   setTab(tab: Aba): void {
     this.currentTab.set(tab);
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 
   // ---------------- Análises ----------------
@@ -198,6 +207,8 @@ export class AmostraCadastro implements OnInit {
         incerteza: c.incerteza,
         ld: c.ld,
         lq: c.lq,
+        preco: 0,
+        quantidade: 1,
         grupoAnalise: null,
       },
     ]);
@@ -209,9 +220,33 @@ export class AmostraCadastro implements OnInit {
     );
   }
 
+  atualizarPrecoAnalise(index: number, valor: string): void {
+    const preco = this.parseNumero(valor);
+    this.analises.update((lista) => lista.map((a, i) => (i === index ? { ...a, preco } : a)));
+  }
+
+  atualizarQtdAnalise(index: number, valor: string): void {
+    const quantidade = this.parseNumero(valor) || 1;
+    this.analises.update((lista) => lista.map((a, i) => (i === index ? { ...a, quantidade } : a)));
+  }
+
+  totalLinhaAnalise(a: AmostraAnaliseModel): number {
+    return (a.preco || 0) * (a.quantidade || 0);
+  }
+
+  private parseNumero(valor: string): number {
+    const n = parseFloat((valor ?? '').toString().replace(',', '.'));
+    return isNaN(n) || n < 0 ? 0 : n;
+  }
+
   // ---------------- Ações ----------------
   voltar(): void {
-    this.router.navigate(['/comercial', this.idProposta, 'editar']);
+    // Volta para a proposta em modo VISUALIZAÇÃO (não força edição da PC).
+    this.router.navigate(['/comercial', this.idProposta]);
+  }
+
+  irParaEdicao(): void {
+    this.router.navigate(['/comercial', this.idProposta, 'amostra', this.idAmostra, 'editar']);
   }
 
   salvar(): void {
@@ -240,7 +275,7 @@ export class AmostraCadastro implements OnInit {
         .subscribe({
           next: (nova) => {
             this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Amostra criada com sucesso.' });
-            setTimeout(() => this.router.navigate(['/comercial', this.idProposta, 'amostra', nova.id]), 800);
+            setTimeout(() => this.router.navigate(['/comercial', this.idProposta, 'amostra', nova.id, 'editar']), 800);
           },
           error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível criar a amostra.' }),
         });
@@ -259,9 +294,8 @@ export class AmostraCadastro implements OnInit {
       })
       .subscribe({
         next: () => {
-          const atual = this.amostra();
-          if (atual) this.amostra.set({ ...atual, idTipoAmostra: idTipo, tipoAmostra: tipoNome });
           this.messageService.add({ severity: 'success', summary: 'Sucesso', detail: 'Amostra salva com sucesso.' });
+          this.carregar(); // recarrega para refletir embalagens herdadas + custo
         },
         error: () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar a amostra.' }),
       });

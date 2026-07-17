@@ -91,6 +91,8 @@ export class PropostaCadastro implements OnInit {
   private readonly amostrasService = inject(AmostrasService);
   tiposAmostra = toSignal(this.tiposAmostrasService.tipos$, { initialValue: [] as TipoAmostraResponseModel[] });
   amostras = signal<AmostraModel[]>([]);
+  custoAmostras = computed(() => this.amostras().reduce((s, a) => s + (a.custoTotal || 0), 0));
+  valorTotalProposta = computed(() => this.totalGeral() + this.custoAmostras());
   mostrarModalAmostra = signal(false);
   tipoAmostraBusca = signal('');
   tiposAmostraFiltrados = computed(() => {
@@ -418,6 +420,10 @@ export class PropostaCadastro implements OnInit {
 
   setTab(tab: Aba): void {
     this.currentTab.set(tab);
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 
   private montarInformacoes() {

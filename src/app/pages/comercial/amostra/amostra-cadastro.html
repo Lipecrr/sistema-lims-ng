@@ -63,6 +63,10 @@
         class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
         Voltar
       </button>
+      <button *ngIf="modo() === 'visualizar'" type="button" (click)="irParaEdicao()"
+        class="inline-flex items-center justify-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
+        <i class="pi pi-pencil"></i> Editar
+      </button>
     </div>
   </div>
 
@@ -79,6 +83,10 @@
       <button type="button" (click)="setTab('analises')"
         [class]="currentTab() === 'analises' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
         Análises
+      </button>
+      <button type="button" (click)="setTab('embalagens')"
+        [class]="currentTab() === 'embalagens' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
+        Embalagens
       </button>
     </div>
 
@@ -145,7 +153,7 @@
       <section *ngIf="currentTab() === 'analises'">
         <div class="flex items-center justify-between gap-4">
           <p class="text-sm text-slate-600">Análises desta amostra (puxadas de dentro dos métodos cadastrados).</p>
-          <button type="button" (click)="abrirModalAnalise()"
+          <button *ngIf="modo() !== 'visualizar'" type="button" (click)="abrirModalAnalise()"
             class="inline-flex items-center gap-2 rounded-2xl bg-blue-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-blue-700">
             <i class="pi pi-plus"></i> Adicionar por Análises
           </button>
@@ -156,36 +164,90 @@
         </div>
 
         <div *ngIf="analises().length > 0" class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
-          <table class="w-full min-w-[900px] text-sm">
+          <table class="w-full min-w-[860px] text-sm">
             <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
               <tr>
                 <th class="px-4 py-3">Ordem</th>
                 <th class="px-4 py-3">Análise</th>
                 <th class="px-4 py-3">Método de Análise</th>
-                <th class="px-4 py-3">Tipo de Método</th>
                 <th class="px-4 py-3">Unidade</th>
-                <th class="px-4 py-3 text-right">Incerteza</th>
                 <th class="px-4 py-3 text-right">LD</th>
                 <th class="px-4 py-3 text-right">LQ</th>
-                <th class="px-4 py-3">Grupo de Análise</th>
+                <th class="px-4 py-3 text-right">Preço</th>
+                <th class="px-4 py-3 text-right">Quantidade</th>
+                <th class="px-4 py-3 text-right">Total</th>
                 <th class="px-4 py-3"></th>
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr *ngFor="let a of analises(); let i = index">
+              <tr *ngFor="let a of analises(); let i = index; trackBy: trackByIndex">
                 <td class="px-4 py-3 text-slate-500">{{ a.ordem }}</td>
                 <td class="px-4 py-3 font-medium text-slate-900">{{ a.analise }}</td>
                 <td class="px-4 py-3 text-slate-700">{{ a.metodo || '—' }}</td>
-                <td class="px-4 py-3 text-slate-500">{{ a.tipoMetodo || '—' }}</td>
                 <td class="px-4 py-3 text-slate-500">{{ a.unidadeMedida || '—' }}</td>
-                <td class="px-4 py-3 text-right text-slate-500">{{ a.incerteza ?? '—' }}</td>
                 <td class="px-4 py-3 text-right text-slate-500">{{ a.ld ?? '—' }}</td>
                 <td class="px-4 py-3 text-right text-slate-500">{{ a.lq ?? '—' }}</td>
-                <td class="px-4 py-3 text-slate-300 italic">a definir</td>
                 <td class="px-4 py-3 text-right">
-                  <button type="button" (click)="removerAnalise(i)" class="text-slate-400 transition hover:text-red-600" aria-label="Remover">
+                  <div class="flex items-center justify-end gap-1">
+                    <span class="text-slate-400">R$</span>
+                    <input type="number" min="0" step="0.01" [value]="a.preco" [disabled]="modo() === 'visualizar'"
+                      (input)="atualizarPrecoAnalise(i, $any($event.target).value)"
+                      class="w-28 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-right outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100" />
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <input type="number" min="0" step="1" [value]="a.quantidade" [disabled]="modo() === 'visualizar'"
+                    (input)="atualizarQtdAnalise(i, $any($event.target).value)"
+                    class="w-24 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-right outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100" />
+                </td>
+                <td class="px-4 py-3 text-right font-semibold text-slate-900">R$ {{ totalLinhaAnalise(a) | number:'1.2-2' }}</td>
+                <td class="px-4 py-3 text-right">
+                  <button *ngIf="modo() !== 'visualizar'" type="button" (click)="removerAnalise(i)" class="text-slate-400 transition hover:text-red-600" aria-label="Remover">
                     <i class="pi pi-trash"></i>
                   </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="border-t border-slate-200 bg-slate-50">
+              <tr>
+                <td class="px-4 py-3 text-sm font-semibold text-slate-700" colspan="8">Custo da amostra</td>
+                <td class="px-4 py-3 text-right text-base font-bold text-slate-900">R$ {{ custoAmostra() | number:'1.2-2' }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </section>
+
+      <!-- ================= EMBALAGENS (herdadas dos métodos) ================= -->
+      <section *ngIf="currentTab() === 'embalagens'">
+        <p class="text-sm text-slate-600">Embalagens herdadas automaticamente dos métodos das análises (atualizadas ao salvar).</p>
+
+        <div *ngIf="(amostra()?.embalagens?.length ?? 0) === 0" class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+          Nenhuma embalagem. Adicione análises (cujos métodos tenham embalagens) e salve.
+        </div>
+
+        <div *ngIf="(amostra()?.embalagens?.length ?? 0) > 0" class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full min-w-[760px] text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-4 py-3">Método de Análise</th>
+                <th class="px-4 py-3">Tipo de Embalagem</th>
+                <th class="px-4 py-3 text-right">Quantidade</th>
+                <th class="px-4 py-3">Unidade</th>
+                <th class="px-4 py-3">Preservante</th>
+                <th class="px-4 py-3 text-center">Herdado</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let e of amostra()?.embalagens">
+                <td class="px-4 py-3 text-slate-700">{{ e.metodo || '—' }}</td>
+                <td class="px-4 py-3 font-medium text-slate-900">{{ e.tipoEmbalagem || '—' }}</td>
+                <td class="px-4 py-3 text-right text-slate-700">{{ e.quantidade ?? '—' }}</td>
+                <td class="px-4 py-3 text-slate-500">{{ e.unidadeMedida || '—' }}</td>
+                <td class="px-4 py-3 text-slate-700">{{ e.preservante || '—' }}</td>
+                <td class="px-4 py-3 text-center">
+                  <span class="inline-flex rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-semibold text-emerald-700">{{ e.herdado ? 'Sim' : 'Não' }}</span>
                 </td>
               </tr>
             </tbody>
@@ -194,7 +256,7 @@
       </section>
 
       <!-- ================= AÇÕES ================= -->
-      <div class="flex flex-col gap-3 sm:flex-row sm:justify-end">
+      <div *ngIf="modo() !== 'visualizar'" class="flex flex-col gap-3 sm:flex-row sm:justify-end">
         <button type="button" (click)="voltar()"
           class="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
           Cancelar

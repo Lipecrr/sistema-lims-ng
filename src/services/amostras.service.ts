@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, map, shareReplay, switchMap, tap } from 'r
 import type {
   AmostraModel,
   AmostraAnaliseModel,
+  AmostraEmbalagemModel,
   CriarAmostraPayload,
   AlterarAmostraPayload,
 } from '@/models/amostra.model';
@@ -23,7 +24,23 @@ interface AmostraAnaliseApi {
   incerteza: number | null;
   ld: number | null;
   lq: number | null;
+  preco: number;
+  quantidade: number;
+  preco_total: number;
   grupo_analise: string | null;
+}
+
+interface AmostraEmbalagemApi {
+  id: number;
+  ordem: number;
+  id_metodologia: number | null;
+  metodo: string | null;
+  tipo_embalagem: string | null;
+  tipo_amostra: string | null;
+  quantidade: number | null;
+  unidade_medida: string | null;
+  preservante: string | null;
+  herdado: boolean;
 }
 
 interface AmostraApi {
@@ -40,7 +57,9 @@ interface AmostraApi {
   motivo: string | null;
   amostra_modelo_id: number | null;
   status: 'ATIVO' | 'INATIVO';
+  custo_total: number;
   analises: AmostraAnaliseApi[];
+  embalagens: AmostraEmbalagemApi[];
 }
 
 function analiseParaModel(a: AmostraAnaliseApi): AmostraAnaliseModel {
@@ -56,7 +75,25 @@ function analiseParaModel(a: AmostraAnaliseApi): AmostraAnaliseModel {
     incerteza: a.incerteza !== null ? Number(a.incerteza) : null,
     ld: a.ld !== null ? Number(a.ld) : null,
     lq: a.lq !== null ? Number(a.lq) : null,
+    preco: Number(a.preco),
+    quantidade: Number(a.quantidade),
+    precoTotal: Number(a.preco_total),
     grupoAnalise: a.grupo_analise,
+  };
+}
+
+function embalagemParaModel(e: AmostraEmbalagemApi): AmostraEmbalagemModel {
+  return {
+    id: e.id,
+    ordem: e.ordem,
+    idMetodologia: e.id_metodologia,
+    metodo: e.metodo,
+    tipoEmbalagem: e.tipo_embalagem,
+    tipoAmostra: e.tipo_amostra,
+    quantidade: e.quantidade !== null ? Number(e.quantidade) : null,
+    unidadeMedida: e.unidade_medida,
+    preservante: e.preservante,
+    herdado: e.herdado,
   };
 }
 
@@ -75,7 +112,9 @@ function paraModel(item: AmostraApi): AmostraModel {
     motivo: item.motivo,
     amostraModeloId: item.amostra_modelo_id,
     status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
+    custoTotal: Number(item.custo_total ?? 0),
     analises: (item.analises ?? []).map(analiseParaModel),
+    embalagens: (item.embalagens ?? []).map(embalagemParaModel),
   };
 }
 
@@ -91,6 +130,8 @@ function analisesParaApi(analises: AmostraAnaliseModel[]) {
     incerteza: a.incerteza,
     ld: a.ld,
     lq: a.lq,
+    preco: a.preco ?? 0,
+    quantidade: a.quantidade ?? 1,
     grupo_analise: a.grupoAnalise,
   }));
 }

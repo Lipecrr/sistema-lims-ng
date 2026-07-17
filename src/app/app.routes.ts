@@ -43,6 +43,7 @@ export const routes: Routes = [
     { path: 'comercial/nova', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro) },
     { path: 'comercial/:id/editar', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro), data: { modo: 'editar' } },
     { path: 'comercial/:idProposta/amostra/nova', loadComponent: () => import('./pages/comercial/amostra/amostra-cadastro.js').then((m) => m.AmostraCadastro), data: { modo: 'nova' } },
-    { path: 'comercial/:idProposta/amostra/:idAmostra', loadComponent: () => import('./pages/comercial/amostra/amostra-cadastro.js').then((m) => m.AmostraCadastro) },
+    { path: 'comercial/:idProposta/amostra/:idAmostra/editar', loadComponent: () => import('./pages/comercial/amostra/amostra-cadastro.js').then((m) => m.AmostraCadastro), data: { modo: 'edit' } },
+    { path: 'comercial/:idProposta/amostra/:idAmostra', loadComponent: () => import('./pages/comercial/amostra/amostra-cadastro.js').then((m) => m.AmostraCadastro), data: { modo: 'visualizar' } },
     { path: 'comercial/:id', loadComponent: () => import('./pages/comercial/create/proposta-cadastro.js').then((m) => m.PropostaCadastro), data: { modo: 'visualizar' } },
 ];

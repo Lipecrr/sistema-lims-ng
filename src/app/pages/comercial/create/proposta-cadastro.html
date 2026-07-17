@@ -251,7 +251,7 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
-              <tr *ngFor="let p of precos(); let i = index">
+              <tr *ngFor="let p of precos(); let i = index; trackBy: trackByIndex">
                 <td class="px-4 py-3 font-medium text-slate-900">{{ p.identificacao }}</td>
                 <td class="px-4 py-3 text-right text-slate-500">R$ {{ p.precoTabela | number:'1.2-2' }}</td>
                 <td class="px-4 py-3 text-right">
@@ -278,12 +278,30 @@
             </tbody>
             <tfoot class="border-t border-slate-200 bg-slate-50">
               <tr>
-                <td class="px-4 py-3 text-sm font-semibold text-slate-700" colspan="4">Total geral</td>
+                <td class="px-4 py-3 text-sm font-semibold text-slate-700" colspan="4">Total dos preços</td>
                 <td class="px-4 py-3 text-right text-base font-bold text-slate-900">R$ {{ totalGeral() | number:'1.2-2' }}</td>
                 <td></td>
               </tr>
             </tfoot>
           </table>
+        </div>
+
+        <!-- Resumo do valor total da proposta (preços da PC + custo das amostras) -->
+        <div class="mt-6 rounded-2xl border border-slate-200 bg-slate-50 p-5">
+          <div class="ml-auto max-w-sm space-y-2 text-sm">
+            <div class="flex items-center justify-between text-slate-600">
+              <span>Preços da proposta</span>
+              <span class="font-medium text-slate-900">R$ {{ totalGeral() | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex items-center justify-between text-slate-600">
+              <span>Custo das amostras</span>
+              <span class="font-medium text-slate-900">R$ {{ custoAmostras() | number:'1.2-2' }}</span>
+            </div>
+            <div class="flex items-center justify-between border-t border-slate-200 pt-2 text-base font-bold text-slate-950">
+              <span>Valor total da proposta</span>
+              <span>R$ {{ valorTotalProposta() | number:'1.2-2' }}</span>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -318,6 +336,7 @@
                   <th class="px-4 py-3">Tipo de Amostra</th>
                   <th class="px-4 py-3 text-center">Situação</th>
                   <th class="px-4 py-3 text-center">Análises</th>
+                  <th class="px-4 py-3 text-right">Custo</th>
                   <th class="px-4 py-3"></th>
                 </tr>
               </thead>
@@ -331,6 +350,7 @@
                     <span class="inline-flex rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-700">{{ a.situacao }}</span>
                   </td>
                   <td class="px-4 py-3 text-center text-slate-700">{{ a.analises.length }}</td>
+                  <td class="px-4 py-3 text-right font-medium text-slate-900">R$ {{ a.custoTotal | number:'1.2-2' }}</td>
                   <td class="px-4 py-3 text-right">
                     <button *ngIf="!modoVisualizacao" type="button" (click)="$event.stopPropagation(); removerAmostra(a)"
                       class="text-slate-400 transition hover:text-red-600" aria-label="Remover">

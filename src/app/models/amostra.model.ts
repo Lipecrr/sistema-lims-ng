@@ -10,7 +10,23 @@ export interface AmostraAnaliseModel {
   incerteza: number | null;
   ld: number | null;
   lq: number | null;
+  preco: number;
+  quantidade: number;
+  precoTotal?: number;
   grupoAnalise: string | null;
+}
+
+export interface AmostraEmbalagemModel {
+  id: number;
+  ordem: number;
+  idMetodologia: number | null;
+  metodo: string | null;
+  tipoEmbalagem: string | null;
+  tipoAmostra: string | null;
+  quantidade: number | null;
+  unidadeMedida: string | null;
+  preservante: string | null;
+  herdado: boolean;
 }
 
 export interface AmostraModel {
@@ -27,7 +43,9 @@ export interface AmostraModel {
   motivo: string | null;
   amostraModeloId: number | null;
   status: 'Ativo' | 'Inativo';
+  custoTotal: number;
   analises: AmostraAnaliseModel[];
+  embalagens: AmostraEmbalagemModel[];
 }
 
 export interface CriarAmostraPayload {
