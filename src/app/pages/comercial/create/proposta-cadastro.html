@@ -35,6 +35,10 @@
         [class]="currentTab() === 'informacoes' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
         Informações
       </button>
+      <button type="button" (click)="setTab('precos')"
+        [class]="currentTab() === 'precos' ? 'rounded-2xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white' : 'rounded-2xl bg-slate-100 px-5 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-200'">
+        Preços
+      </button>
     </div>
 
     <div class="mt-8 space-y-8">
@@ -145,6 +149,87 @@
               Campo obrigatório.
             </p>
           </div>
+        </div>
+      </section>
+
+      <!-- ================= PREÇOS ================= -->
+      <section *ngIf="currentTab() === 'precos'">
+        <!-- Busca no catálogo para vincular itens -->
+        <div *ngIf="!modoVisualizacao" class="relative max-w-xl">
+          <label class="block text-sm font-semibold text-slate-700">Adicionar item de preço</label>
+          <div class="relative mt-2">
+            <input type="text" [value]="itemBusca()"
+              (input)="onBuscaItem($any($event.target).value)" (focus)="mostrarResultadosItem.set(true)" (blur)="fecharResultadosItem()"
+              placeholder="Buscar no catálogo por nome  (use * como curinga, ex.: *coleta)"
+              class="w-full rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 pr-10 text-sm text-slate-900 outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100" />
+            <ul *ngIf="mostrarResultadosItem() && itensFiltrados().length > 0"
+              class="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-slate-200 bg-white py-1 shadow-lg">
+              <li *ngFor="let it of itensFiltrados()" (mousedown)="adicionarItemPreco(it)"
+                class="flex cursor-pointer items-center justify-between gap-4 px-4 py-2 text-sm hover:bg-slate-100">
+                <span>
+                  <span class="font-medium text-slate-900">{{ it.identificacao }}</span>
+                  <span class="ml-2 text-xs text-slate-400">{{ it.tipo }}</span>
+                </span>
+                <span class="text-xs text-slate-500">R$ {{ it.preco | number:'1.2-2' }}</span>
+              </li>
+            </ul>
+            <div *ngIf="mostrarResultadosItem() && itemBusca() && itensFiltrados().length === 0"
+              class="absolute z-20 mt-1 w-full rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm text-slate-500 shadow-lg">
+              Nenhum item encontrado no catálogo.
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="precos().length === 0" class="mt-6 rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center text-sm text-slate-500">
+          Nenhum item de preço vinculado. {{ modoVisualizacao ? '' : 'Busque no catálogo acima para adicionar.' }}
+        </div>
+
+        <div *ngIf="precos().length > 0" class="mt-6 overflow-x-auto rounded-2xl border border-slate-200">
+          <table class="w-full min-w-[720px] text-sm">
+            <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <tr>
+                <th class="px-4 py-3">Item de Preço</th>
+                <th class="px-4 py-3 text-right">Preço Tabela</th>
+                <th class="px-4 py-3 text-right">Preço</th>
+                <th class="px-4 py-3 text-right">Quantidade</th>
+                <th class="px-4 py-3 text-right">Total</th>
+                <th class="px-4 py-3"></th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+              <tr *ngFor="let p of precos(); let i = index">
+                <td class="px-4 py-3 font-medium text-slate-900">{{ p.identificacao }}</td>
+                <td class="px-4 py-3 text-right text-slate-500">R$ {{ p.precoTabela | number:'1.2-2' }}</td>
+                <td class="px-4 py-3 text-right">
+                  <div class="flex items-center justify-end gap-1">
+                    <span class="text-slate-400">R$</span>
+                    <input type="number" min="0" step="0.01" [value]="p.preco" [disabled]="modoVisualizacao"
+                      (input)="atualizarPreco(i, $any($event.target).value)"
+                      class="w-28 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-right outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100" />
+                  </div>
+                </td>
+                <td class="px-4 py-3 text-right">
+                  <input type="number" min="0" step="1" [value]="p.quantidade" [disabled]="modoVisualizacao"
+                    (input)="atualizarQuantidade(i, $any($event.target).value)"
+                    class="w-24 rounded-lg border border-slate-300 bg-slate-50 px-2 py-1.5 text-right outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100 disabled:bg-slate-100" />
+                </td>
+                <td class="px-4 py-3 text-right font-semibold text-slate-900">R$ {{ totalLinha(p) | number:'1.2-2' }}</td>
+                <td class="px-4 py-3 text-right">
+                  <button *ngIf="!modoVisualizacao" type="button" (click)="removerPreco(i)"
+                    class="text-slate-400 transition hover:text-red-600" aria-label="Remover">
+                    <i class="pi pi-trash"></i>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+            <tfoot class="border-t border-slate-200 bg-slate-50">
+              <tr>
+                <td class="px-4 py-3 text-sm font-semibold text-slate-700" colspan="4">Total geral</td>
+                <td class="px-4 py-3 text-right text-base font-bold text-slate-900">R$ {{ totalGeral() | number:'1.2-2' }}</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
         </div>
       </section>
 

@@ -14,6 +14,17 @@ interface PropostaInformacaoApi {
   valor: string | null;
 }
 
+interface PropostaPrecoApi {
+  id: number;
+  ordem: number;
+  id_item_preco: number | null;
+  identificacao: string;
+  preco_tabela: number;
+  preco: number;
+  quantidade: number;
+  preco_total: number;
+}
+
 interface PropostaApi {
   id: number;
   numero: string;
@@ -30,6 +41,7 @@ interface PropostaApi {
   data_conclusao: string | null;
   status: 'ATIVO' | 'INATIVO';
   informacoes: PropostaInformacaoApi[];
+  precos: PropostaPrecoApi[];
 }
 
 function paraModel(item: PropostaApi): PropostaModel {
@@ -49,6 +61,16 @@ function paraModel(item: PropostaApi): PropostaModel {
     dataConclusao: item.data_conclusao,
     status: item.status === 'ATIVO' ? 'Ativo' : 'Inativo',
     informacoes: (item.informacoes ?? []).map((i) => ({ id: i.id, ordem: i.ordem, etapa: i.etapa, informacao: i.informacao, valor: i.valor })),
+    precos: (item.precos ?? []).map((p) => ({
+      id: p.id,
+      ordem: p.ordem,
+      idItemPreco: p.id_item_preco,
+      identificacao: p.identificacao,
+      precoTabela: Number(p.preco_tabela),
+      preco: Number(p.preco),
+      quantidade: Number(p.quantidade),
+      precoTotal: Number(p.preco_total),
+    })),
   };
 }
 
@@ -61,6 +83,14 @@ function paraApiRequest(p: CriarPropostaPayload) {
     data_execucao: p.dataExecucao,
     data_conclusao: p.dataConclusao,
     informacoes: p.informacoes.map((i) => ({ ordem: i.ordem, etapa: i.etapa, informacao: i.informacao, valor: i.valor })),
+    precos: p.precos.map((pr) => ({
+      ordem: pr.ordem,
+      id_item_preco: pr.idItemPreco,
+      identificacao: pr.identificacao,
+      preco_tabela: pr.precoTabela,
+      preco: pr.preco,
+      quantidade: pr.quantidade,
+    })),
   };
 }
 
@@ -101,6 +131,7 @@ export class PropostasService {
       data_execucao: body.data_execucao,
       data_conclusao: body.data_conclusao,
       informacoes: body.informacoes,
+      precos: body.precos,
     }).pipe(tap(() => this.reloadSubject.next()));
   }
 

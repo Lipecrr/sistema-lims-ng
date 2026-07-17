@@ -7,15 +7,17 @@ import { combineLatest, take } from 'rxjs';
 import { ToastModule } from 'primeng/toast';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { MessageService, ConfirmationService } from 'primeng/api';
-import { CriarPropostaPayload } from '@/models/proposta.model';
+import { CriarPropostaPayload, PropostaPrecoModel } from '@/models/proposta.model';
 import { ClienteResponseModel } from '@/models/cliente.model';
+import { ItemPrecoResponseModel } from '@/models/item-preco.model';
 import { PropostasService } from 'src/services/propostas.service';
 import { TiposAtividadesService } from 'src/services/tipos-atividades.service';
 import { InformacoesService } from 'src/services/informacoes.service';
 import { ClientesService } from 'src/services/clientes.service';
+import { ItensPrecoService } from 'src/services/itens-preco.service';
 import { matchFiltro } from '@/core/utils/filtro';
 
-type Aba = 'detalhes' | 'informacoes';
+type Aba = 'detalhes' | 'informacoes' | 'precos';
 
 interface CampoInfo {
   ordem: number;
@@ -63,6 +65,22 @@ export class PropostaCadastro implements OnInit {
       .filter((c) => matchFiltro(c.nome_empresa_nome_pf, termo) || matchFiltro(c.cnpj_cpf, termo))
       .slice(0, 12);
   });
+
+  // ---- Preços (itens de preço vinculados) ----
+  private readonly itensPrecoService = inject(ItensPrecoService);
+  catalogoPreco = toSignal(this.itensPrecoService.getItensPreco(), { initialValue: [] as ItemPrecoResponseModel[] });
+  precos = signal<PropostaPrecoModel[]>([]);
+  itemBusca = signal('');
+  mostrarResultadosItem = signal(false);
+  itensFiltrados = computed(() => {
+    const termo = this.itemBusca();
+    return this.catalogoPreco()
+      .filter((i) => i.status === 'Ativo' && matchFiltro(i.identificacao, termo))
+      .slice(0, 12);
+  });
+  totalGeral = computed(() =>
+    this.precos().reduce((soma, p) => soma + this.totalLinha(p), 0)
+  );
 
   id: string | null = null;
   modoVisualizacao = false;
@@ -180,6 +198,19 @@ export class PropostaCadastro implements OnInit {
           const salva = p.informacoes.find((i) => i.informacao === campo.informacao);
           if (salva) this.formInfos.get(campo.controlName)?.setValue(salva.valor ?? '', { emitEvent: false });
         }
+        this.precos.set(
+          [...p.precos]
+            .sort((a, b) => a.ordem - b.ordem)
+            .map((pr) => ({
+              id: pr.id,
+              ordem: pr.ordem,
+              idItemPreco: pr.idItemPreco,
+              identificacao: pr.identificacao,
+              precoTabela: pr.precoTabela,
+              preco: pr.preco,
+              quantidade: pr.quantidade,
+            }))
+        );
         if (this.modoVisualizacao) {
           this.formDetalhes.disable();
           this.formInfos.disable();
@@ -251,6 +282,70 @@ export class PropostaCadastro implements OnInit {
     setTimeout(() => this.mostrarResultados.set(false), 150);
   }
 
+  // ---------------- Preços ----------------
+  onBuscaItem(texto: string): void {
+    this.itemBusca.set(texto);
+    this.mostrarResultadosItem.set(true);
+  }
+
+  fecharResultadosItem(): void {
+    setTimeout(() => this.mostrarResultadosItem.set(false), 150);
+  }
+
+  adicionarItemPreco(item: ItemPrecoResponseModel): void {
+    if (this.modoVisualizacao) return;
+    this.precos.update((lista) => [
+      ...lista,
+      {
+        ordem: lista.length + 1,
+        idItemPreco: item.id,
+        identificacao: item.identificacao,
+        precoTabela: item.preco,
+        preco: item.preco,
+        quantidade: 1,
+      },
+    ]);
+    this.itemBusca.set('');
+    this.mostrarResultadosItem.set(false);
+  }
+
+  removerPreco(index: number): void {
+    if (this.modoVisualizacao) return;
+    this.precos.update((lista) =>
+      lista.filter((_, i) => i !== index).map((p, i) => ({ ...p, ordem: i + 1 }))
+    );
+  }
+
+  atualizarPreco(index: number, valor: string): void {
+    const preco = this.parseNumero(valor);
+    this.precos.update((lista) => lista.map((p, i) => (i === index ? { ...p, preco } : p)));
+  }
+
+  atualizarQuantidade(index: number, valor: string): void {
+    const quantidade = this.parseNumero(valor);
+    this.precos.update((lista) => lista.map((p, i) => (i === index ? { ...p, quantidade } : p)));
+  }
+
+  totalLinha(p: PropostaPrecoModel): number {
+    return (p.preco || 0) * (p.quantidade || 0);
+  }
+
+  private parseNumero(valor: string): number {
+    const n = parseFloat((valor ?? '').toString().replace(',', '.'));
+    return isNaN(n) || n < 0 ? 0 : n;
+  }
+
+  private montarPrecos(): PropostaPrecoModel[] {
+    return this.precos().map((p, i) => ({
+      ordem: i + 1,
+      idItemPreco: p.idItemPreco,
+      identificacao: p.identificacao,
+      precoTabela: p.precoTabela,
+      preco: p.preco || 0,
+      quantidade: p.quantidade || 0,
+    }));
+  }
+
   irParaEdicao(): void {
     if (this.id) this.router.navigate(['/comercial', this.id, 'editar']);
   }
@@ -294,6 +389,12 @@ export class PropostaCadastro implements OnInit {
       return;
     }
 
+    if (this.precos().some((p) => (p.quantidade || 0) <= 0)) {
+      this.currentTab.set('precos');
+      this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Cada item de preço precisa de uma quantidade maior que zero.' });
+      return;
+    }
+
     const idTipo = this.idTipoAtividade();
     if (idTipo === null) {
       this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Tipo de atividade "Proposta Comercial" não encontrado.' });
@@ -308,6 +409,7 @@ export class PropostaCadastro implements OnInit {
       dataExecucao: this.formDetalhes.get('dataExecucao')?.value || null,
       dataConclusao: this.formDetalhes.get('dataConclusao')?.value || null,
       informacoes: this.montarInformacoes(),
+      precos: this.montarPrecos(),
     };
 
     const erro = () => this.messageService.add({ severity: 'error', summary: 'Erro', detail: 'Não foi possível salvar a proposta. Tente novamente.' });

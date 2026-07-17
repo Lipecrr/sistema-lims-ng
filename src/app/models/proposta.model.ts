@@ -6,6 +6,17 @@ export interface PropostaInformacaoModel {
   valor: string | null;
 }
 
+export interface PropostaPrecoModel {
+  id?: number;
+  ordem: number;
+  idItemPreco: number | null;
+  identificacao: string;
+  precoTabela: number;
+  preco: number;
+  quantidade: number;
+  precoTotal?: number;
+}
+
 export interface PropostaModel {
   id: number;
   numero: string;
@@ -22,6 +33,7 @@ export interface PropostaModel {
   dataConclusao: string | null;
   status: 'Ativo' | 'Inativo';
   informacoes: PropostaInformacaoModel[];
+  precos: PropostaPrecoModel[];
 }
 
 export interface CriarPropostaPayload {
@@ -32,4 +44,5 @@ export interface CriarPropostaPayload {
   dataExecucao: string | null;
   dataConclusao: string | null;
   informacoes: PropostaInformacaoModel[];
+  precos: PropostaPrecoModel[];
 }
